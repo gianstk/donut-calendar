@@ -252,7 +252,7 @@
                     if (events[date]) {
                         cell.classList.add('event-day');
                         // Set the background color to a darker shade of the month color
-                        var darkerColor = adjustLightness(color, -20);
+                        var darkerColor = adjustLightness(color, +20);
                         cell.style.backgroundColor = darkerColor;
                         cell.style.color = '#fff';
                     }
