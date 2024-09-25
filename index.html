@@ -66,18 +66,6 @@
             font-weight: bold;
             color: #333;
         }
-        .budget {
-            position: absolute;
-            width: 80px;
-            height: 50px;
-            overflow: hidden;
-            font-size: 12px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 5px;
-            text-align: center;
-            padding-top: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
         #year-label {
             position: absolute;
             font-size: 48px;
@@ -113,6 +101,15 @@
         }
         .close-button:hover {
             color: #ff4d4d;
+        }
+        .cycle-label {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            width: 80px;
+            transform: translate(-50%, -50%);
         }
     </style>
 </head>
@@ -203,14 +200,6 @@
                 }
             }
 
-            // Sample budgets
-            var budgets = {
-                "Q1": "$50,000",
-                "Q2": "$75,000",
-                "Q3": "$65,000",
-                "Q4": "$80,000"
-            };
-
             // Create tooltip
             var tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
@@ -287,8 +276,8 @@
                 });
             }
 
-            // Generate quarter slices and budgets
-            var quarters = ["Q1", "Q2", "Q3", "Q4"];
+            // Generate quarter slices and cycle labels
+            var cycles = ["Cycle 1", "Cycle 2", "Cycle 3", "Cycle 4"];
             for (var j = 0; j < 4; j++) {
                 var qStartAngle = j * 90;
                 var qEndAngle = qStartAngle + 90;
@@ -302,22 +291,21 @@
                 qPath.setAttribute("stroke-width", "1");
                 chart.appendChild(qPath);
 
-                // Position the budget
+                // Position the cycle label
                 var qAngle = (qStartAngle + qEndAngle) / 2 - 90;
                 var qRad = qAngle * Math.PI / 180.0;
-                var budRadius = (quarterRadius + quarterInnerRadius) / 2;
+                var labelRadius = (quarterRadius + quarterInnerRadius) / 2;
 
-                var budX = centerX + budRadius * Math.cos(qRad) - 40;
-                var budY = centerY + budRadius * Math.sin(qRad) - 25;
+                var labelX = centerX + labelRadius * Math.cos(qRad);
+                var labelY = centerY + labelRadius * Math.sin(qRad);
 
-                // Create a div for the budget
-                var budDiv = document.createElement("div");
-                budDiv.className = "budget";
-                budDiv.style.left = budX + "px";
-                budDiv.style.top = budY + "px";
-                budDiv.style.backgroundColor = adjustLightness(qColor, 20);
-                budDiv.innerHTML = "<strong>" + quarters[j] + "</strong><br>" + budgets[quarters[j]];
-                document.body.appendChild(budDiv);
+                // Create a div for the cycle label
+                var cycleDiv = document.createElement("div");
+                cycleDiv.className = "cycle-label";
+                cycleDiv.style.left = labelX + "px";
+                cycleDiv.style.top = labelY + "px";
+                cycleDiv.innerHTML = cycles[j];
+                document.body.appendChild(cycleDiv);
             }
 
             // Display the year at the center
@@ -348,7 +336,7 @@
                 // Create a new event card
                 var eventCard = document.createElement('div');
                 eventCard.className = 'event-card';
-                eventCard.style.backgroundColor = adjustLightness(monthColor, +20); // Darker shade of month color
+                eventCard.style.backgroundColor = adjustLightness(monthColor, -20); // Darker shade of month color
 
                 // Create close button
                 var closeButton = document.createElement('button');
