@@ -1,462 +1,775 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Donut Chart Calendar Dashboard</title>
+    <title>University Staff Calendar</title>
     <style>
-        body {
+        body, html {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #fafafa;
             font-family: Arial, sans-serif;
         }
-        #chart {
+        svg {
+            display: block;
+            margin: auto;
+        }
+        /* Popup Card Styles */
+        .popup-card {
             position: absolute;
-            width: 100vw;
-            height: 100vh;
-        }
-        .calendar {
-            position: absolute;
-            width: 140px; /* Increased width */
-            height: 160px; /* Increased height */
-            overflow: hidden;
-            font-size: 12px; /* Slightly increased font size */
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .calendar-header {
-            text-align: center;
-            font-weight: bold;
-            padding: 4px; /* Adjusted padding */
-            font-size: 14px; /* Increased font size */
-            background-color: rgba(0,0,0,0.05);
-        }
-        .calendar table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .calendar td {
-            border: 1px solid #ddd;
-            width: 14%;
-            text-align: center;
-            cursor: pointer;
-            padding: 3px; /* Adjusted padding */
-        }
-        .calendar td.day:hover {
-            background-color: #eaeaea;
-        }
-        .tooltip {
-            position: absolute;
-            background-color: rgba(0,0,0,0.75);
-            color: #fff;
-            padding: 5px;
-            border-radius: 3px;
-            font-size: 12px;
-            display: none;
-            pointer-events: none;
-            z-index: 1000;
-        }
-        #title {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-        #year-label {
-            position: absolute;
-            font-size: 48px;
-            font-weight: bold;
-            color: #555;
-            text-anchor: middle;
-        }
-        .event-card {
-            position: absolute;
-            width: 200px;
             background-color: #fff;
-            border-radius: 5px;
-            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 16px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: move;
             z-index: 1000;
-            font-size: 12px;
         }
-        .event-card h2 {
-            margin-top: 0;
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: move;
+        }
+        .popup-header .close-btn {
+            cursor: pointer;
+            font-weight: bold;
             font-size: 16px;
         }
-        .event-card p {
-            margin: 5px 0;
-        }
-        .close-button {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: transparent;
-            border: none;
+        .popup-content {
             font-size: 14px;
+            color: #333;
+        }
+        .foreign-object {
+            pointer-events: none; /* Allow clicks to pass through except on interactive elements */
+        }
+        .slice-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            pointer-events: auto; /* Enable interactions within foreignObject */
+        }
+        .month-name {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+        .dots-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2px;
+            max-width: 80%;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #555;
             cursor: pointer;
         }
-        .close-button:hover {
-            color: #ff4d4d;
-        }
-        .cycle-label {
+        .card {
             position: absolute;
-            font-size: 14px;
-            font-weight: bold;
-            color: #fff;
-            text-align: center;
-            width: 80px;
-            transform: translate(-50%, -50%);
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            z-index: 1000;
+            width: 200px;
+            cursor: move;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div id="title">University of Sydney Vision Statement</div>
     <svg id="chart"></svg>
 
+    <div id="cards-container"></div>
+    
     <script>
-        (function() {
-            var svgNS = "http://www.w3.org/2000/svg";
-            var chart = document.getElementById("chart");
-            var width = window.innerWidth;
-            var height = window.innerHeight;
-            chart.setAttribute("width", width);
-            chart.setAttribute("height", height);
+        // Data for chart_1
+        const chart1Data = [
+            { month: "Jan", tickets: 71, topics: ["USS", "GOS"] },
+            { month: "Feb", tickets: 67, topics: ["USS", "QS Rankings"] },
+            { month: "Mar", tickets: 70, topics: ["QR Rankings"] },
+            { month: "Apr", tickets: 79, topics: ["TEQSA", "FFT", "GOS"] },
+            { month: "May", tickets: 167, topics: ["TSS", "QR Rankings"] },
+            { month: "Jun", tickets: 70, topics: ["USS", "Budget"] },
+            { month: "Jul", tickets: 115, topics: ["USS", "Budget"] },
+            { month: "Aug", tickets: 70, topics: ["TEQSA", "QILT"] },
+            { month: "Sep", tickets: 69, topics: ["USS", "TEQSA", "QR Rankings"] },
+            { month: "Oct", tickets: 138, topics: ["Budget", "FFT"] },
+            { month: "Nov", tickets: 130, topics: ["USS", "QS WUR Ranking"] },
+            { month: "Dec", tickets: 62, topics: ["USS", "QR Rankings (result)"] }
+        ];
 
-            var centerX = width / 2;
-            var centerY = height / 2;
-            var radius = Math.min(width, height) / 2 - 20;
-            var innerRadius = radius * 0.6;
+        const chart2Data = [
+          {
+            "AAP Release Topic": "Fee Setting",
+            "Month": "Jan",
+            "Month Sequence": 1,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "Fees UE SCPC paper",
+            "Month": "Jan",
+            "Month Sequence": 1,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "SES Survey",
+            "Month": "Jan",
+            "Month Sequence": 1,
+            "Team": "Insights",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "RBG figures",
+            "Month": "Jan",
+            "Month Sequence": 1,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "Student Load Revenue Comliance",
+            "Month": "Jan",
+            "Month Sequence": 1,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "NSW Audit Office Revenue",
+            "Month": "Jan",
+            "Month Sequence": 1,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "Unifortum Scaling Factors",
+            "Month": "Jan",
+            "Month Sequence": 1,
+            "Team": "Insights",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "THE Rankings",
+            "Month": "Feb",
+            "Month Sequence": 2,
+            "Team": "External Benchmarks",
+            "Area": "Research Analytics"
+          },
+          {
+            "AAP Release Topic": "ATAR Marks",
+            "Month": "Feb",
+            "Month Sequence": 2,
+            "Team": "Analytics Team",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "Government ISSP Report",
+            "Month": "Feb",
+            "Month Sequence": 2,
+            "Team": "Analytics Data Science",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "Student Projections",
+            "Month": "Feb",
+            "Month Sequence": 2,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "Load Post Census (S1) enrolment",
+            "Month": "Mar",
+            "Month Sequence": 3,
+            "Team": "Government Reporting Team",
+            "Area": "Enterprise Data & BI"
+          },
+          {
+            "AAP Release Topic": "UAC BI Rollover",
+            "Month": "Mar",
+            "Month Sequence": 3,
+            "Team": "Government Reporting Team",
+            "Area": "Enterprise Data & BI"
+          },
+          {
+            "AAP Release Topic": "ESS Survey",
+            "Month": "Mar",
+            "Month Sequence": 3,
+            "Team": "Insights",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "EFTSL regional and remote students",
+            "Month": "Mar",
+            "Month Sequence": 3,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "QS Rankings",
+            "Month": "Apr",
+            "Month Sequence": 4,
+            "Team": "External Benchmarks",
+            "Area": "Research Analytics"
+          },
+          {
+            "AAP Release Topic": "QS WUR Rankings",
+            "Month": "Apr",
+            "Month Sequence": 4,
+            "Team": "External Benchmarks",
+            "Area": "Research Analytics"
+          },
+          {
+            "AAP Release Topic": "Uniforum Results",
+            "Month": "May",
+            "Month Sequence": 5,
+            "Team": "Insights",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "Proctor U Exam Refresh",
+            "Month": "May",
+            "Month Sequence": 5,
+            "Team": "Analytics Data Science",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "Budget Planning",
+            "Month": "May",
+            "Month Sequence": 5,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "Research Performance",
+            "Month": "May",
+            "Month Sequence": 5,
+            "Team": "Engagement & Impact Assessment",
+            "Area": "Research Analytics"
+          },
+          {
+            "AAP Release Topic": "Set course fees",
+            "Month": "May",
+            "Month Sequence": 5,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "Budget Planning",
+            "Month": "Jun",
+            "Month Sequence": 6,
+            "Team": "Planning",
+            "Area": "Planning & Analytics"
+          },
+          {
+            "AAP Release Topic": "Research Performance",
+            "Month": "Jun",
+            "Month Sequence": 6,
+            "Team": "Engagement & Impact Assessment",
+            "Area": "Research Analytics"
+          },
+          {
+            "AAP Release Topic": "GOS-L Survey",
+            "Month": "Jun",
+            "Month Sequence": 6,
+            "Team": "Insights",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "USS/SAM/WAM",
+            "Month": "Jun",
+            "Month Sequence": 6,
+            "Team": "Insights",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "Proctor U Exam Refresh",
+            "Month": "Jun",
+            "Month Sequence": 6,
+            "Team": "Analytics Data Science",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "Credit Share Release",
+            "Month": "Jul",
+            "Month Sequence": 7,
+            "Team": "Engagement & Impact Assessment",
+            "Area": "Research Analytics"
+          },
+          {
+            "AAP Release Topic": "Proctor U Exam Refresh",
+            "Month": "Jul",
+            "Month Sequence": 7,
+            "Team": "Analytics Data Science",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "Load Post Census (S2) enrolment",
+            "Month": "Aug",
+            "Month Sequence": 8,
+            "Team": "Government Reporting Team",
+            "Area": "Enterprise Data & BI"
+          },
+          {
+            "AAP Release Topic": "SES/Uniforum",
+            "Month": "Aug",
+            "Month Sequence": 8,
+            "Team": "Insights",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "",
+            "Month": "Sep",
+            "Month Sequence": 9,
+            "Team": "Insights",
+            "Area": "Data Science & Insights"
+          },
+          {
+            "AAP Release Topic": "RTM Rollover Enrolment",
+            "Month": "Oct",
+            "Month Sequence": 10,
+            "Team": "Government Reporting Team",
+            "Area": "Enterprise Data & BI"
+          },
+          {
+            "AAP Release Topic": "Post Census enrolment",
+            "Month": "Dec",
+            "Month Sequence": 12,
+            "Team": "Government Reporting Team",
+            "Area": "Enterprise Data & BI"
+          }
+        ];
 
-            var quarterRadius = innerRadius * 0.6;
-            var quarterInnerRadius = quarterRadius * 0.6;
 
-            function polarToCartesian(centerX, centerY, radius, angleInDegrees){
-                var angleInRadians = (angleInDegrees-90) * Math.PI / 180.0;
+        // Helper function to get heatmap color based on tickets
+        function getHeatmapColor1(tickets) {
+            if (tickets <= 70) return "#A8E6A3"; // Green
+            if (tickets <= 105) return "#FFF59D"; // Yellow
+            if (tickets <= 135) return "#FFCC80"; // Orange
+            return "#FF8A80"; // Red
+        }
 
-                return {
-                    x: centerX + (radius * Math.cos(angleInRadians)),
-                    y: centerY + (radius * Math.sin(angleInRadians))
+        function getHeatMapColor2(count) {
+            if (count <= 1) return '#A8E6A3'; // Green
+            if (count <= 3) return '#FFF59D'; // Yellow
+            if (count <= 5) return '#FFCC80'; // Orange
+            return '#FF8A80'; // Red
+        }
+
+        // Function to make elements draggable
+        function makeDraggable(element) {
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            element.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                const rect = element.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            function onMouseMove(e) {
+                if (isDragging) {
+                    element.style.left = (e.clientX - offsetX) + 'px';
+                    element.style.top = (e.clientY - offsetY) + 'px';
+                }
+            }
+
+            function onMouseUp() {
+                isDragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+        }
+
+        function createDraggableCard(data, clickEvent) {
+            const cardsContainer = document.getElementById('cards-container');
+
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.style.left = clickEvent.pageX + 'px';
+            card.style.top = clickEvent.pageY + 'px';
+
+            const cardHeader = document.createElement('div');
+            cardHeader.classList.add('card-header');
+
+            const title = document.createElement('div');
+            title.textContent = `${data["Month"]} AAP Release Topic`;
+            // data["AAP Release Topic"] || "No Topic";
+
+            const closeButton = document.createElement('button');
+            closeButton.classList.add('close-button');
+            closeButton.innerHTML = '&times;';
+            closeButton.onclick = () => {
+                cardsContainer.removeChild(card);
+            };
+
+            cardHeader.appendChild(title);
+            cardHeader.appendChild(closeButton);
+            card.appendChild(cardHeader);
+
+            const cardBody = document.createElement('div');
+            cardBody.innerHTML = `
+                <p><strong>Topic:</strong> ${data["AAP Release Topic"] || "N/A"}</p>
+                <p><strong>Team:</strong> ${data["Team"]}</p>
+                <p><strong>Area:</strong> ${data["Area"]}</p>
+            `;
+            card.appendChild(cardBody);
+
+            // Make the card draggable
+            cardHeader.onmousedown = function(event) {
+                event.preventDefault();
+                let shiftX = event.clientX - card.getBoundingClientRect().left;
+                let shiftY = event.clientY - card.getBoundingClientRect().top;
+
+                function moveAt(pageX, pageY) {
+                    card.style.left = pageX - shiftX + 'px';
+                    card.style.top = pageY - shiftY + 'px';
+                }
+
+                function onMouseMove(event) {
+                    moveAt(event.pageX, event.pageY);
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+
+                document.onmouseup = function() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.onmouseup = null;
                 };
-            }
+            };
 
-            function describeArc(x, y, radius, innerRadius, startAngle, endAngle){
-                var start = polarToCartesian(x, y, radius, endAngle);
-                var end = polarToCartesian(x, y, radius, startAngle);
-                var startInner = polarToCartesian(x, y, innerRadius, endAngle);
-                var endInner = polarToCartesian(x, y, innerRadius, startAngle);
+            cardHeader.ondragstart = function() {
+                return false;
+            };
 
-                var largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+            cardsContainer.appendChild(card);
+        }
 
-                var d = [
-                    "M", start.x, start.y,
-                    "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
-                    "L", endInner.x, endInner.y,
-                    "A", innerRadius, innerRadius, 0, largeArcFlag, 1, startInner.x, startInner.y,
-                    "L", start.x, start.y
-                ].join(" ");
 
-                return d;
-            }
+        // Get the SVG element and dimensions
+        var svg = document.getElementById('chart');
+        var width = window.innerWidth;
+        var height = window.innerHeight;
+        svg.setAttribute('width', width);
+        svg.setAttribute('height', height);
 
-            function adjustLightness(hslColor, adjustment) {
-                var hsl = hslColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
-                if (hsl) {
-                    var h = parseInt(hsl[1]);
-                    var s = parseInt(hsl[2]);
-                    var l = parseInt(hsl[3]);
-                    l = Math.max(0, Math.min(100, l + adjustment));
-                    return 'hsl(' + h + ', ' + s + '%, ' + l + '%)';
-                }
-                return hslColor;
-            }
+        var centerX = width / 2;
+        var centerY = height / 2;
 
-            var currentYear = new Date().getFullYear();
-            var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        var margin = 20;
+        var ringGap = 10; // Increased gap for better spacing
+        var numRings = 4;
+        var centralCircleRadius = 80;
 
-            // Sample events
-            var events = {};
-            for (var m = 0; m < 12; m++) {
-                var month = (m+1).toString().padStart(2,'0');
-                var daysInMonth = new Date(currentYear, m+1, 0).getDate();
-                for (var d = 1; d <= daysInMonth; d++) {
-                    var day = d.toString().padStart(2,'0');
-                    var dateStr = currentYear + '-' + month + '-' + day;
-                    // Assign events to random days
-                    if (Math.random() < 0.2) {
-                        events[dateStr] = {
-                            title: "Event on " + dateStr,
-                            date: dateStr,
-                            time: "10:00 AM - 12:00 PM",
-                            description: "This is a sample event description for " + dateStr + ".",
-                            departments: "Department A, Department B",
-                            monthIndex: m // Store month index for color reference
-                        };
-                    }
-                }
-            }
+        var outerRadius = Math.min(width, height) / 2 - margin;
 
-            // Create tooltip
-            var tooltip = document.createElement('div');
-            tooltip.className = 'tooltip';
-            document.body.appendChild(tooltip);
+        var totalAvailableRadius = outerRadius - centralCircleRadius - (numRings * ringGap);
+        var ringWidth = totalAvailableRadius / numRings;
 
-            // Generate month slices and calendars
-            var monthColors = [];
-            for (var i = 0; i < 12; i++) {
-                var startAngle = i * 30;
-                var endAngle = startAngle + 30;
+        var chartTitles = [
+            'JIRA TIX',
+            'AAP Calendar',
+            'University Calendar',
+            'Student Journey'
+        ];
 
-                var color = "hsl(" + (i * 30) + ", 60%, 70%)";
-                monthColors.push(color);
+        var chartColors = [
+            '#A8E6CF', // Pastel blue replaced with heatmap start color for chart_1
+            '#D7B3FF', // Pastel purple
+            '#FFA07A', // Light salmon (dark orange)
+            '#FFFFB3'  // Pastel yellow
+        ];
 
-                var path = document.createElementNS(svgNS, "path");
-                path.setAttribute("d", describeArc(centerX, centerY, radius, innerRadius, startAngle, endAngle));
-                path.setAttribute("fill", color);
-                path.setAttribute("stroke", "#fff");
+        var rings = [];
+
+        // Calculate inner and outer radii for each ring
+        for (var i = 0; i < numRings; i++) {
+            var innerRadius = centralCircleRadius + ringGap * (i + 1) + ringWidth * i;
+            var outerRadiusRing = innerRadius + ringWidth;
+            rings.push({ innerRadius: innerRadius, outerRadius: outerRadiusRing });
+        }
+
+        // Create central circle with the current year
+        var centralCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        centralCircle.setAttribute("cx", centerX);
+        centralCircle.setAttribute("cy", centerY);
+        centralCircle.setAttribute("r", centralCircleRadius);
+        centralCircle.setAttribute("fill", "#FFFFFF");
+        centralCircle.setAttribute("stroke", "#CCCCCC");
+        centralCircle.setAttribute("stroke-width", "2");
+
+        svg.appendChild(centralCircle);
+
+        var year = new Date().getFullYear();
+        var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", centerX);
+        text.setAttribute("y", centerY + 5); // Adjusted for vertical alignment
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("font-size", centralCircleRadius / 2);
+        text.setAttribute("font-family", "Arial, sans-serif");
+        text.setAttribute("font-weight", "bold");
+        text.setAttribute("fill", "#000000");
+        text.textContent = year;
+
+        svg.appendChild(text);
+
+        // Function to describe a donut slice path
+        function describeDonutSlice(cx, cy, innerRadius, outerRadius, startAngle, endAngle) {
+            var x1 = cx + outerRadius * Math.cos(startAngle);
+            var y1 = cy + outerRadius * Math.sin(startAngle);
+            var x2 = cx + outerRadius * Math.cos(endAngle);
+            var y2 = cy + outerRadius * Math.sin(endAngle);
+
+            var x3 = cx + innerRadius * Math.cos(endAngle);
+            var y3 = cy + innerRadius * Math.sin(endAngle);
+            var x4 = cx + innerRadius * Math.cos(startAngle);
+            var y4 = cy + innerRadius * Math.sin(startAngle);
+
+            var largeArcFlag = endAngle - startAngle <= Math.PI ? "0" : "1";
+
+            var pathData = [
+                "M", x1, y1,
+                "A", outerRadius, outerRadius, 0, largeArcFlag, 1, x2, y2,
+                "L", x3, y3,
+                "A", innerRadius, innerRadius, 0, largeArcFlag, 0, x4, y4,
+                "Z"
+            ].join(" ");
+
+            return pathData;
+        }
+
+        // Generate the nested donut charts
+        for (var ringIndex = 0; ringIndex < numRings; ringIndex++) {
+            var ring = rings[ringIndex];
+            var innerRadius = ring.innerRadius;
+            var outerRadiusRing = ring.outerRadius;
+            var color = chartColors[ringIndex];
+            var chartTitle = chartTitles[ringIndex];
+
+            var group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+            // Add title to the group for hover effect
+            var title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+            title.textContent = chartTitle;
+            group.appendChild(title);
+
+            if (ringIndex === 0) {
+              for (var month = 0; month < 12; month++) {
+                var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
+                var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
+
+                var pathData;
+                var data = chart1Data[month];
+                var fillColor = getHeatmapColor1(data.tickets);
+                pathData = describeDonutSlice(centerX, centerY, innerRadius, outerRadiusRing, startAngle, endAngle);
+
+                var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", pathData);
+                path.setAttribute("fill", fillColor);
+                path.setAttribute("stroke", "#FFFFFF");
                 path.setAttribute("stroke-width", "1");
-                chart.appendChild(path);
+                path.style.cursor = (ringIndex === 0) ? "pointer" : "default";
 
-                // Position the calendar
-                var angle = (startAngle + endAngle) / 2 - 90;
-                var rad = angle * Math.PI / 180.0;
-                var calRadius = (radius + innerRadius) / 2;
+                // If chart_1, add interactivity
+                path.addEventListener('click', (function(data) {
+                    return function(event) {
+                        createPopup(data, fillColor);
+                    };
+                })(chart1Data[month]));
 
-                var calWidth = 140; // Updated width
-                var calHeight = 160; // Updated height
+                group.appendChild(path);
 
-                var calX = centerX + calRadius * Math.cos(rad) - calWidth / 2;
-                var calY = centerY + calRadius * Math.sin(rad) - calHeight / 2;
+                // Add month name text for chart_1
+                if (ringIndex === 0) {
+                    var midAngle = (startAngle + endAngle) / 2;
+                    var textRadius = (innerRadius + outerRadiusRing) / 2;
+                    var textX = centerX + textRadius * Math.cos(midAngle);
+                    var textY = centerY + textRadius * Math.sin(midAngle) + 5; // Adjust for vertical alignment
 
-                // Create a div for the calendar
-                var calDiv = document.createElement("div");
-                calDiv.className = "calendar";
-                calDiv.style.left = calX + "px";
-                calDiv.style.top = calY + "px";
-                calDiv.style.width = calWidth + "px";
-                calDiv.style.height = calHeight + "px";
-                calDiv.style.backgroundColor = adjustLightness(color, +20);
+                    var monthText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    monthText.setAttribute("x", textX);
+                    monthText.setAttribute("y", textY);
+                    monthText.setAttribute("text-anchor", "middle");
+                    monthText.setAttribute("font-size", "12px");
+                    monthText.setAttribute("font-weight", "bold");
+                    monthText.setAttribute("fill", "#000000");
+                    monthText.textContent = `${chart1Data[month].month} JIRA`;
 
-                // Generate the calendar HTML
-                calDiv.innerHTML = generateCalendar(i, currentYear, months[i], color);
-                document.body.appendChild(calDiv);
+                    // Prevent text from capturing the click event (allow path to handle it)
+                    monthText.style.pointerEvents = "none";
 
-                // Add event listeners to day cells within this calendar
-                var dayCells = calDiv.querySelectorAll('.day');
-                dayCells.forEach(function(cell) {
-                    var date = cell.dataset.date;
-                    if (events[date]) {
-                        cell.classList.add('event-day');
-                        // Set the background color to a darker shade of the month color
-                        var darkerColor = adjustLightness(color, -20);
-                        cell.style.backgroundColor = darkerColor;
-                        cell.style.color = '#fff';
-                    }
-                    cell.addEventListener('mouseenter', function(e) {
-                        var date = e.target.dataset.date;
-                        if (events[date]) {
-                            showTooltip(e.target, events[date].title);
-                        }
-                    });
-                    cell.addEventListener('mouseleave', function(e) {
-                        hideTooltip();
-                    });
-                    cell.addEventListener('click', function(e) {
-                        var date = e.target.dataset.date;
-                        if (events[date]) {
-                            var eventData = events[date];
-                            var monthColor = monthColors[eventData.monthIndex];
-                            showEventCard(eventData, e.pageX, e.pageY, monthColor);
-                        }
-                    });
-                });
-            }
-
-            // Generate quarter slices and cycle labels
-            var cycles = ["Cycle 1", "Cycle 2", "Cycle 3", "Cycle 4"];
-            for (var j = 0; j < 4; j++) {
-                var qStartAngle = j * 90;
-                var qEndAngle = qStartAngle + 90;
-
-                var qColor = "hsl(" + (j * 90) + ", 60%, 50%)";
-
-                var qPath = document.createElementNS(svgNS, "path");
-                qPath.setAttribute("d", describeArc(centerX, centerY, quarterRadius, quarterInnerRadius, qStartAngle, qEndAngle));
-                qPath.setAttribute("fill", qColor);
-                qPath.setAttribute("stroke", "#fff");
-                qPath.setAttribute("stroke-width", "1");
-                chart.appendChild(qPath);
-
-                // Position the cycle label
-                var qAngle = (qStartAngle + qEndAngle) / 2 - 90;
-                var qRad = qAngle * Math.PI / 180.0;
-                var labelRadius = (quarterRadius + quarterInnerRadius) / 2;
-
-                var labelX = centerX + labelRadius * Math.cos(qRad);
-                var labelY = centerY + labelRadius * Math.sin(qRad);
-
-                // Create a div for the cycle label
-                var cycleDiv = document.createElement("div");
-                cycleDiv.className = "cycle-label";
-                cycleDiv.style.left = labelX + "px";
-                cycleDiv.style.top = labelY + "px";
-                cycleDiv.innerHTML = cycles[j];
-                document.body.appendChild(cycleDiv);
-            }
-
-            // Display the year at the center
-            var yearText = document.createElementNS(svgNS, "text");
-            yearText.setAttribute("id", "year-label");
-            yearText.setAttribute("x", centerX);
-            yearText.setAttribute("y", centerY + 16); // Adjusted for vertical centering
-            yearText.setAttribute("text-anchor", "middle");
-            yearText.setAttribute("fill", "#555");
-            yearText.setAttribute("font-size", "48px");
-            yearText.setAttribute("font-weight", "bold");
-            yearText.textContent = currentYear;
-            chart.appendChild(yearText);
-
-            function showTooltip(target, text) {
-                tooltip.innerHTML = text;
-                var rect = target.getBoundingClientRect();
-                tooltip.style.left = rect.left + window.pageXOffset + 'px';
-                tooltip.style.top = rect.top + window.pageYOffset - tooltip.offsetHeight - 5 + 'px';
-                tooltip.style.display = 'block';
-            }
-
-            function hideTooltip() {
-                tooltip.style.display = 'none';
-            }
-
-            function showEventCard(eventData, x, y, monthColor) {
-                // Create a new event card
-                var eventCard = document.createElement('div');
-                eventCard.className = 'event-card';
-                eventCard.style.backgroundColor = adjustLightness(monthColor, +20); // Lighter shade of month color
-
-                // Create close button
-                var closeButton = document.createElement('button');
-                closeButton.className = 'close-button';
-                closeButton.innerHTML = '&times;';
-                eventCard.appendChild(closeButton);
-
-                // Add event listener to close button
-                closeButton.addEventListener('click', function() {
-                    document.body.removeChild(eventCard);
-                });
-
-                // Create the content of the card
-                var eventTitle = document.createElement('h2');
-                eventTitle.textContent = eventData.title;
-                eventCard.appendChild(eventTitle);
-
-                var eventDate = document.createElement('p');
-                eventDate.innerHTML = '<strong>Date:</strong> ' + eventData.date;
-                eventCard.appendChild(eventDate);
-
-                var eventTime = document.createElement('p');
-                eventTime.innerHTML = '<strong>Time:</strong> ' + eventData.time;
-                eventCard.appendChild(eventTime);
-
-                var eventDescriptionLabel = document.createElement('p');
-                eventDescriptionLabel.innerHTML = '<strong>Description:</strong>';
-                eventCard.appendChild(eventDescriptionLabel);
-
-                var eventDescription = document.createElement('p');
-                eventDescription.textContent = eventData.description;
-                eventCard.appendChild(eventDescription);
-
-                var eventDepartmentsLabel = document.createElement('p');
-                eventDepartmentsLabel.innerHTML = '<strong>Associated Departments:</strong>';
-                eventCard.appendChild(eventDepartmentsLabel);
-
-                var eventDepartments = document.createElement('p');
-                eventDepartments.textContent = eventData.departments;
-                eventCard.appendChild(eventDepartments);
-
-                // Position the card
-                eventCard.style.left = x + 'px';
-                eventCard.style.top = y + 'px';
-
-                // Add the card to the body
-                document.body.appendChild(eventCard);
-
-                // Make the card draggable
-                makeDraggable(eventCard);
-            }
-
-            function makeDraggable(elem) {
-                var isDragging = false;
-                var dragOffsetX = 0;
-                var dragOffsetY = 0;
-
-                elem.addEventListener('mousedown', function(e) {
-                    isDragging = true;
-                    dragOffsetX = e.clientX - elem.offsetLeft;
-                    dragOffsetY = e.clientY - elem.offsetTop;
-                    elem.style.cursor = 'move';
-                });
-
-                document.addEventListener('mousemove', function(e) {
-                    if (isDragging) {
-                        elem.style.left = (e.clientX - dragOffsetX) + 'px';
-                        elem.style.top = (e.clientY - dragOffsetY) + 'px';
-                    }
-                });
-
-                document.addEventListener('mouseup', function() {
-                    if (isDragging) {
-                        isDragging = false;
-                        elem.style.cursor = 'default';
-                    }
-                });
-            }
-
-            function generateCalendar(month, year, monthName, monthColor) {
-                var firstDay = new Date(year, month, 1);
-                var startingDay = firstDay.getDay();
-                var monthLength = new Date(year, month + 1, 0).getDate();
-
-                var html = '<div class="calendar-header">' + monthName + '</div>';
-                html += '<table><tr>';
-                var day = 1;
-
-                // Fill the empty cells before the first day
-                for (var i = 0; i < 7; i++) {
-                    if (i < startingDay) {
-                        html += '<td></td>';
-                    } else {
-                        var dateStr = year + '-' + (month+1).toString().padStart(2,'0') + '-' + day.toString().padStart(2,'0');
-                        var eventClass = events[dateStr] ? 'event-day' : '';
-                        html += '<td class="day ' + eventClass + '" data-date="' + dateStr + '">' + day + '</td>';
-                        day++;
-                    }
+                    group.appendChild(monthText);
                 }
-                html += '</tr>';
-
-                // Rest of the weeks
-                while (day <= monthLength) {
-                    html += '<tr>';
-                    for (var i = 0; i < 7; i++) {
-                        if (day <= monthLength) {
-                            var dateStr = year + '-' + (month+1).toString().padStart(2,'0') + '-' + day.toString().padStart(2,'0');
-                            var eventClass = events[dateStr] ? 'event-day' : '';
-                            html += '<td class="day ' + eventClass + '" data-date="' + dateStr + '">' + day + '</td>';
-                            day++;
-                        } else {
-                            html += '<td></td>';
-                        }
-                    }
-                    html += '</tr>';
-                }
-                html += '</table>';
-                return html;
+              }
             }
-        })();
+
+            if (ringIndex === 1) {
+              for (var month = 0; month < 12; month++) {
+                var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
+                var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
+
+                var pathData = describeDonutSlice(centerX, centerY, innerRadius, outerRadiusRing, startAngle, endAngle);
+
+                var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", pathData);
+
+                if (ringIndex === 1) { // chart_2
+                    // Count tickets for the month
+                    var currentMonth = month + 1;
+                    var tickets = chart2Data.filter(item => item["Month Sequence"] === currentMonth && item["AAP Release Topic"]);
+                    var ticketCount = tickets.length;
+                    var sliceColor = getHeatMapColor2(ticketCount);
+                    path.setAttribute("fill", sliceColor);
+                } else {
+                    path.setAttribute("fill", color);
+                }
+
+                path.setAttribute("stroke", "#FFFFFF");
+                path.setAttribute("stroke-width", "1");
+
+                group.appendChild(path);
+
+                // If chart_2, add foreignObject with month name and dots
+                if (ringIndex === 1) { // chart_2
+                    var foreignObject = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
+                    foreignObject.setAttribute("x", centerX + (innerRadius + outerRadiusRing) / 2 * Math.cos(startAngle + (endAngle - startAngle)/2) - 50); // Adjust x
+                    foreignObject.setAttribute("y", centerY + (innerRadius + outerRadiusRing) / 2 * Math.sin(startAngle + (endAngle - startAngle)/2) - 30); // Adjust y
+                    foreignObject.setAttribute("width", 100);
+                    foreignObject.setAttribute("height", 60);
+                    foreignObject.classList.add('foreign-object');
+
+                    var div = document.createElement('div');
+                    div.classList.add('slice-content');
+
+                    // Month name
+                    var monthName = document.createElement('div');
+                    monthName.classList.add('month-name');
+                    var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    monthName.textContent = `${monthNames[month]} AAP`;
+                    div.appendChild(monthName);
+
+                    // Dots container
+                    var dotsContainer = document.createElement('div');
+                    dotsContainer.classList.add('dots-container');
+
+                    // Get tickets for the current month
+                    var monthTickets = chart2Data.filter(item => item["Month Sequence"] === (month + 1) && item["AAP Release Topic"]);
+
+                    monthTickets.forEach(ticket => {
+                        var dot = document.createElement('div');
+                        dot.classList.add('dot');
+                        dot.title = ticket["AAP Release Topic"];
+                        dot.style.backgroundColor = '#555'; // Default dot color
+                        dot.onclick = function(event) {
+                            event.stopPropagation(); // Prevent triggering parent events
+                            createDraggableCard(ticket, event);
+                        };
+                        dotsContainer.appendChild(dot);
+                    });
+
+                    div.appendChild(dotsContainer);
+                    foreignObject.appendChild(div);
+                    group.appendChild(foreignObject);
+                }
+              }
+            }
+
+            svg.appendChild(group);
+        }
+
+        // Function to create popup card
+        function createPopup(data, bgColor) {
+            // Create card element
+            var card = document.createElement('div');
+            card.classList.add('popup-card');
+            // card.style.backgroundColor = bgColor;
+
+            // Set initial position
+            card.style.left = '100px';
+            card.style.top = '100px';
+
+            // Create header with title and close button
+            var header = document.createElement('div');
+            header.classList.add('popup-header');
+
+            var title = document.createElement('div');
+            // title.textContent = data.month;
+            title.textContent = `${data.month} JIRA Tickets`;
+            title.style.fontWeight = 'bold';
+
+            var closeBtn = document.createElement('div');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.classList.add('close-btn');
+            closeBtn.addEventListener('click', function() {
+                document.body.removeChild(card);
+            });
+
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+
+            // Create content
+            var content = document.createElement('div');
+            content.classList.add('popup-content');
+
+            var tickets = document.createElement('div');
+            tickets.innerHTML = `<strong>Total Tickets:</strong> ${data.tickets}`;
+            content.appendChild(tickets);
+
+            var topics = document.createElement('div');
+            topics.innerHTML = `<strong>Topics:</strong>`;
+            var topicList = document.createElement('ul');
+            data.topics.forEach(function(topic) {
+                var li = document.createElement('li');
+                li.textContent = topic;
+                topicList.appendChild(li);
+            });
+            topics.appendChild(topicList);
+            content.appendChild(topics);
+
+            card.appendChild(header);
+            card.appendChild(content);
+            document.body.appendChild(card);
+
+            // Make the card draggable
+            makeDraggable(card);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            centerX = width / 2;
+            centerY = height / 2;
+
+            // Optionally, you can re-render the charts on resize
+            // For simplicity, this example does not handle re-rendering on resize
+        });
     </script>
 </body>
 </html>
