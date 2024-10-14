@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>University Staff Calendar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
     <style>
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: "Roboto", sans-serif;
         }
+
         svg {
             display: block;
             margin: auto;
         }
+
         /* Popup Card Styles */
         .popup-card {
             position: absolute;
@@ -20,10 +25,11 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             padding: 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             cursor: move;
             z-index: 1000;
         }
+
         .popup-header {
             display: flex;
             justify-content: space-between;
@@ -31,18 +37,23 @@
             margin-bottom: 8px;
             cursor: move;
         }
+
         .popup-header .close-btn {
             cursor: pointer;
             font-weight: bold;
             font-size: 16px;
         }
+
         .popup-content {
             font-size: 14px;
             color: #333;
         }
+
         .foreign-object {
-            pointer-events: none; /* Allow clicks to pass through except on interactive elements */
+            pointer-events: none;
+            /* Allow clicks to pass through except on interactive elements */
         }
+
         .slice-content {
             display: flex;
             flex-direction: column;
@@ -50,45 +61,58 @@
             justify-content: center;
             width: 100%;
             height: 100%;
-            pointer-events: auto; /* Enable interactions within foreignObject */
+            pointer-events: auto;
+            /* Enable interactions within foreignObject */
         }
+
         .month-name {
             font-size: 12px;
             font-weight: bold;
             margin-bottom: 4px;
             text-align: center;
         }
+
         .dots-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 2px;
+            gap: 4px;
             max-width: 80%;
         }
+
         .dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background-color: #555;
             cursor: pointer;
+            background-color: #ffff;
+            transition: transform 0.3s ease-in-out;
         }
+
+        .dot:hover {
+            transform: scale(1.5);
+            background-color: #414141;
+        }
+
         .card {
             position: absolute;
             background-color: #fff;
             border: 1px solid #ccc;
             padding: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             border-radius: 4px;
             z-index: 1000;
             width: 200px;
             cursor: move;
         }
+
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: move;
         }
+
         .close-button {
             background: none;
             border: none;
@@ -97,17 +121,18 @@
         }
     </style>
 </head>
+
 <body>
     <svg id="chart"></svg>
 
     <div id="cards-container"></div>
-    
+
     <script>
         // Data for chart_1
         const chart1Data = [
             { month: "Jan", tickets: 71, topics: ["USS", "GOS"] },
             { month: "Feb", tickets: 67, topics: ["USS", "QS Rankings"] },
-            { month: "Mar", tickets: 70, topics: ["QR Rankings"] },
+            { month: "Mar", tickets: 70, topics: ["QS Rankings"] },
             { month: "Apr", tickets: 79, topics: ["TEQSA", "FFT", "GOS"] },
             { month: "May", tickets: 167, topics: ["TSS", "QR Rankings"] },
             { month: "Jun", tickets: 70, topics: ["USS", "Budget"] },
@@ -116,264 +141,279 @@
             { month: "Sep", tickets: 69, topics: ["USS", "TEQSA", "QR Rankings"] },
             { month: "Oct", tickets: 138, topics: ["Budget", "FFT"] },
             { month: "Nov", tickets: 130, topics: ["USS", "QS WUR Ranking"] },
-            { month: "Dec", tickets: 62, topics: ["USS", "QR Rankings (result)"] }
+            { month: "Dec", tickets: 62, topics: ["USS", "QR Rankings (result)"] },
         ];
 
         const chart2Data = [
-          {
-            "AAP Release Topic": "Fee Setting",
-            "Month": "Jan",
-            "Month Sequence": 1,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "Fees UE SCPC paper",
-            "Month": "Jan",
-            "Month Sequence": 1,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "SES Survey",
-            "Month": "Jan",
-            "Month Sequence": 1,
-            "Team": "Insights",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "RBG figures",
-            "Month": "Jan",
-            "Month Sequence": 1,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "Student Load Revenue Comliance",
-            "Month": "Jan",
-            "Month Sequence": 1,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "NSW Audit Office Revenue",
-            "Month": "Jan",
-            "Month Sequence": 1,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "Unifortum Scaling Factors",
-            "Month": "Jan",
-            "Month Sequence": 1,
-            "Team": "Insights",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "THE Rankings",
-            "Month": "Feb",
-            "Month Sequence": 2,
-            "Team": "External Benchmarks",
-            "Area": "Research Analytics"
-          },
-          {
-            "AAP Release Topic": "ATAR Marks",
-            "Month": "Feb",
-            "Month Sequence": 2,
-            "Team": "Analytics Team",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "Government ISSP Report",
-            "Month": "Feb",
-            "Month Sequence": 2,
-            "Team": "Analytics Data Science",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "Student Projections",
-            "Month": "Feb",
-            "Month Sequence": 2,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "Load Post Census (S1) enrolment",
-            "Month": "Mar",
-            "Month Sequence": 3,
-            "Team": "Government Reporting Team",
-            "Area": "Enterprise Data & BI"
-          },
-          {
-            "AAP Release Topic": "UAC BI Rollover",
-            "Month": "Mar",
-            "Month Sequence": 3,
-            "Team": "Government Reporting Team",
-            "Area": "Enterprise Data & BI"
-          },
-          {
-            "AAP Release Topic": "ESS Survey",
-            "Month": "Mar",
-            "Month Sequence": 3,
-            "Team": "Insights",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "EFTSL regional and remote students",
-            "Month": "Mar",
-            "Month Sequence": 3,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "QS Rankings",
-            "Month": "Apr",
-            "Month Sequence": 4,
-            "Team": "External Benchmarks",
-            "Area": "Research Analytics"
-          },
-          {
-            "AAP Release Topic": "QS WUR Rankings",
-            "Month": "Apr",
-            "Month Sequence": 4,
-            "Team": "External Benchmarks",
-            "Area": "Research Analytics"
-          },
-          {
-            "AAP Release Topic": "Uniforum Results",
-            "Month": "May",
-            "Month Sequence": 5,
-            "Team": "Insights",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "Proctor U Exam Refresh",
-            "Month": "May",
-            "Month Sequence": 5,
-            "Team": "Analytics Data Science",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "Budget Planning",
-            "Month": "May",
-            "Month Sequence": 5,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "Research Performance",
-            "Month": "May",
-            "Month Sequence": 5,
-            "Team": "Engagement & Impact Assessment",
-            "Area": "Research Analytics"
-          },
-          {
-            "AAP Release Topic": "Set course fees",
-            "Month": "May",
-            "Month Sequence": 5,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "Budget Planning",
-            "Month": "Jun",
-            "Month Sequence": 6,
-            "Team": "Planning",
-            "Area": "Planning & Analytics"
-          },
-          {
-            "AAP Release Topic": "Research Performance",
-            "Month": "Jun",
-            "Month Sequence": 6,
-            "Team": "Engagement & Impact Assessment",
-            "Area": "Research Analytics"
-          },
-          {
-            "AAP Release Topic": "GOS-L Survey",
-            "Month": "Jun",
-            "Month Sequence": 6,
-            "Team": "Insights",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "USS/SAM/WAM",
-            "Month": "Jun",
-            "Month Sequence": 6,
-            "Team": "Insights",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "Proctor U Exam Refresh",
-            "Month": "Jun",
-            "Month Sequence": 6,
-            "Team": "Analytics Data Science",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "Credit Share Release",
-            "Month": "Jul",
-            "Month Sequence": 7,
-            "Team": "Engagement & Impact Assessment",
-            "Area": "Research Analytics"
-          },
-          {
-            "AAP Release Topic": "Proctor U Exam Refresh",
-            "Month": "Jul",
-            "Month Sequence": 7,
-            "Team": "Analytics Data Science",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "Load Post Census (S2) enrolment",
-            "Month": "Aug",
-            "Month Sequence": 8,
-            "Team": "Government Reporting Team",
-            "Area": "Enterprise Data & BI"
-          },
-          {
-            "AAP Release Topic": "SES/Uniforum",
-            "Month": "Aug",
-            "Month Sequence": 8,
-            "Team": "Insights",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "",
-            "Month": "Sep",
-            "Month Sequence": 9,
-            "Team": "Insights",
-            "Area": "Data Science & Insights"
-          },
-          {
-            "AAP Release Topic": "RTM Rollover Enrolment",
-            "Month": "Oct",
-            "Month Sequence": 10,
-            "Team": "Government Reporting Team",
-            "Area": "Enterprise Data & BI"
-          },
-          {
-            "AAP Release Topic": "Post Census enrolment",
-            "Month": "Dec",
-            "Month Sequence": 12,
-            "Team": "Government Reporting Team",
-            "Area": "Enterprise Data & BI"
-          }
+            {
+                "AAP Release Topic": "Fee Setting",
+                Month: "Jan",
+                "Month Sequence": 1,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "Fees UE SCPC paper",
+                Month: "Jan",
+                "Month Sequence": 1,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "SES Survey",
+                Month: "Jan",
+                "Month Sequence": 1,
+                Team: "Insights",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "RBG figures",
+                Month: "Jan",
+                "Month Sequence": 1,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "Student Load Revenue Comliance",
+                Month: "Jan",
+                "Month Sequence": 1,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "NSW Audit Office Revenue",
+                Month: "Jan",
+                "Month Sequence": 1,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "Unifortum Scaling Factors",
+                Month: "Jan",
+                "Month Sequence": 1,
+                Team: "Insights",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "THE Rankings",
+                Month: "Feb",
+                "Month Sequence": 2,
+                Team: "External Benchmarks",
+                Area: "Research Analytics",
+            },
+            {
+                "AAP Release Topic": "ATAR Marks",
+                Month: "Feb",
+                "Month Sequence": 2,
+                Team: "Analytics Team",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "Government ISSP Report",
+                Month: "Feb",
+                "Month Sequence": 2,
+                Team: "Analytics Data Science",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "Student Projections",
+                Month: "Feb",
+                "Month Sequence": 2,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "Load Post Census (S1) enrolment",
+                Month: "Mar",
+                "Month Sequence": 3,
+                Team: "Government Reporting Team",
+                Area: "Enterprise Data & BI",
+            },
+            {
+                "AAP Release Topic": "UAC BI Rollover",
+                Month: "Mar",
+                "Month Sequence": 3,
+                Team: "Government Reporting Team",
+                Area: "Enterprise Data & BI",
+            },
+            {
+                "AAP Release Topic": "ESS Survey",
+                Month: "Mar",
+                "Month Sequence": 3,
+                Team: "Insights",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "EFTSL regional and remote students",
+                Month: "Mar",
+                "Month Sequence": 3,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "QS Rankings",
+                Month: "Apr",
+                "Month Sequence": 4,
+                Team: "External Benchmarks",
+                Area: "Research Analytics",
+            },
+            {
+                "AAP Release Topic": "QS WUR Rankings",
+                Month: "Apr",
+                "Month Sequence": 4,
+                Team: "External Benchmarks",
+                Area: "Research Analytics",
+            },
+            {
+                "AAP Release Topic": "Uniforum Results",
+                Month: "May",
+                "Month Sequence": 5,
+                Team: "Insights",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "Proctor U Exam Refresh",
+                Month: "May",
+                "Month Sequence": 5,
+                Team: "Analytics Data Science",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "Budget Planning",
+                Month: "May",
+                "Month Sequence": 5,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "Research Performance",
+                Month: "May",
+                "Month Sequence": 5,
+                Team: "Engagement & Impact Assessment",
+                Area: "Research Analytics",
+            },
+            {
+                "AAP Release Topic": "Set course fees",
+                Month: "May",
+                "Month Sequence": 5,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "Budget Planning",
+                Month: "Jun",
+                "Month Sequence": 6,
+                Team: "Planning",
+                Area: "Planning & Analytics",
+            },
+            {
+                "AAP Release Topic": "Research Performance",
+                Month: "Jun",
+                "Month Sequence": 6,
+                Team: "Engagement & Impact Assessment",
+                Area: "Research Analytics",
+            },
+            {
+                "AAP Release Topic": "GOS-L Survey",
+                Month: "Jun",
+                "Month Sequence": 6,
+                Team: "Insights",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "USS/SAM/WAM",
+                Month: "Jun",
+                "Month Sequence": 6,
+                Team: "Insights",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "Proctor U Exam Refresh",
+                Month: "Jun",
+                "Month Sequence": 6,
+                Team: "Analytics Data Science",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "Credit Share Release",
+                Month: "Jul",
+                "Month Sequence": 7,
+                Team: "Engagement & Impact Assessment",
+                Area: "Research Analytics",
+            },
+            {
+                "AAP Release Topic": "Proctor U Exam Refresh",
+                Month: "Jul",
+                "Month Sequence": 7,
+                Team: "Analytics Data Science",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "Load Post Census (S2) enrolment",
+                Month: "Aug",
+                "Month Sequence": 8,
+                Team: "Government Reporting Team",
+                Area: "Enterprise Data & BI",
+            },
+            {
+                "AAP Release Topic": "SES/Uniforum",
+                Month: "Aug",
+                "Month Sequence": 8,
+                Team: "Insights",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "",
+                Month: "Sep",
+                "Month Sequence": 9,
+                Team: "Insights",
+                Area: "Data Science & Insights",
+            },
+            {
+                "AAP Release Topic": "RTM Rollover Enrolment",
+                Month: "Oct",
+                "Month Sequence": 10,
+                Team: "Government Reporting Team",
+                Area: "Enterprise Data & BI",
+            },
+            {
+                "AAP Release Topic": "Post Census enrolment",
+                Month: "Dec",
+                "Month Sequence": 12,
+                Team: "Government Reporting Team",
+                Area: "Enterprise Data & BI",
+            },
+        ];
+
+        const chart3Data = [
+            { month: "Jan", titles: ["UE agenda items"] },
+            { month: "Feb", titles: ["Semester 1 24", "UE monthly meeting", "UE agenda items"] },
+            { month: "Mar", titles: ["UE monthly meeting"] },
+            { month: "Apr", titles: ["UE agenda items", "UE monthly meeting", "Mid Semester break 1", "Census Date 1", "Open Day"] },
+            { month: "May", titles: ["UE agenda items", "UE monthly meeting", "UE agenda items"] },
+            { month: "Jun", titles: ["UE monthly meeting", "UE agenda items", "Exams Sem 1", "Brand Tracker"] },
+            { month: "Jul", titles: ["UE monthly meeting", "UE agenda items", "Semester 2"] },
+            { month: "Aug", titles: ["UE monthly meeting"] },
+            { month: "Sep", titles: ["UE agenda items", "UE monthly meeting", "Census Date 2"] },
+            { month: "Oct", titles: ["UE agenda items", "UE monthly meeting"] },
+            { month: "Nov", titles: ["UE agenda items", "UE monthly meeting", "Exams Sem 2"] },
+            { month: "Dec", titles: [] },
         ];
 
 
         // Helper function to get heatmap color based on tickets
         function getHeatmapColor1(tickets) {
-            if (tickets <= 70) return "#A8E6A3"; // Green
-            if (tickets <= 105) return "#FFF59D"; // Yellow
-            if (tickets <= 135) return "#FFCC80"; // Orange
-            return "#FF8A80"; // Red
+            if (tickets <= 70) return "#71A399"; // Green
+            if (tickets <= 105) return "#FFC000"; // Yellow
+            if (tickets <= 135) return "#EB8980"; // Orange
+            return "#E64626"; // Red
         }
 
         function getHeatMapColor2(count) {
-            if (count <= 1) return '#A8E6A3'; // Green
-            if (count <= 3) return '#FFF59D'; // Yellow
-            if (count <= 5) return '#FFCC80'; // Orange
-            return '#FF8A80'; // Red
+            if (count <= 1) return "#71A399"; // Green
+            if (count <= 3) return "#FFC000"; // Yellow
+            if (count <= 5) return "#EB8980"; // Orange
+            return "#E64626"; // Red
         }
 
         // Function to make elements draggable
@@ -381,47 +421,48 @@
             let isDragging = false;
             let offsetX, offsetY;
 
-            element.addEventListener('mousedown', function(e) {
+            element.addEventListener("mousedown", function (e) {
                 isDragging = true;
                 const rect = element.getBoundingClientRect();
                 offsetX = e.clientX - rect.left;
                 offsetY = e.clientY - rect.top;
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
+                document.addEventListener("mousemove", onMouseMove);
+                document.addEventListener("mouseup", onMouseUp);
             });
 
             function onMouseMove(e) {
                 if (isDragging) {
-                    element.style.left = (e.clientX - offsetX) + 'px';
-                    element.style.top = (e.clientY - offsetY) + 'px';
+                    element.style.left = e.clientX - offsetX + "px";
+                    element.style.top = e.clientY - offsetY + "px";
                 }
             }
 
             function onMouseUp() {
                 isDragging = false;
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
+                document.removeEventListener("mousemove", onMouseMove);
+                document.removeEventListener("mouseup", onMouseUp);
             }
         }
 
-        function createDraggableCard(data, clickEvent) {
-            const cardsContainer = document.getElementById('cards-container');
+        function createDraggableCard1(data, clickEvent) {
+            console.log(data);
+            const cardsContainer = document.getElementById("cards-container");
 
-            const card = document.createElement('div');
-            card.classList.add('card');
-            card.style.left = clickEvent.pageX + 'px';
-            card.style.top = clickEvent.pageY + 'px';
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.style.left = clickEvent.pageX + "px";
+            card.style.top = clickEvent.pageY + "px";
 
-            const cardHeader = document.createElement('div');
-            cardHeader.classList.add('card-header');
+            const cardHeader = document.createElement("div");
+            cardHeader.classList.add("card-header");
 
-            const title = document.createElement('div');
-            title.textContent = `${data["Month"]} AAP Release Topic`;
-            // data["AAP Release Topic"] || "No Topic";
+            const title = document.createElement("div");
+            title.textContent = `${data.month} Tickets`;
+            title.style.fontWeight = "bold";
 
-            const closeButton = document.createElement('button');
-            closeButton.classList.add('close-button');
-            closeButton.innerHTML = '&times;';
+            const closeButton = document.createElement("button");
+            closeButton.classList.add("close-button");
+            closeButton.innerHTML = "&times;";
             closeButton.onclick = () => {
                 cardsContainer.removeChild(card);
             };
@@ -430,90 +471,238 @@
             cardHeader.appendChild(closeButton);
             card.appendChild(cardHeader);
 
-            const cardBody = document.createElement('div');
-            cardBody.innerHTML = `
-                <p><strong>Topic:</strong> ${data["AAP Release Topic"] || "N/A"}</p>
-                <p><strong>Team:</strong> ${data["Team"]}</p>
-                <p><strong>Area:</strong> ${data["Area"]}</p>
-            `;
-            card.appendChild(cardBody);
+            var content = document.createElement("div");
+            content.classList.add("popup-content");
+
+            var tickets = document.createElement("div");
+            tickets.innerHTML = `Total Tickets: ${data.tickets}`;
+            content.appendChild(tickets);
+
+            var topics = document.createElement("div");
+            topics.innerHTML = `<strong>Topics:</strong>`;
+            var topicList = document.createElement("ul");
+            data.topics.forEach(function (topic) {
+                var li = document.createElement("li");
+                li.textContent = topic;
+                topicList.appendChild(li);
+            });
+            topics.appendChild(topicList);
+            content.appendChild(topics);
+
+            card.appendChild(content);
 
             // Make the card draggable
-            cardHeader.onmousedown = function(event) {
+            cardHeader.onmousedown = function (event) {
                 event.preventDefault();
                 let shiftX = event.clientX - card.getBoundingClientRect().left;
                 let shiftY = event.clientY - card.getBoundingClientRect().top;
 
                 function moveAt(pageX, pageY) {
-                    card.style.left = pageX - shiftX + 'px';
-                    card.style.top = pageY - shiftY + 'px';
+                    card.style.left = pageX - shiftX + "px";
+                    card.style.top = pageY - shiftY + "px";
                 }
 
                 function onMouseMove(event) {
                     moveAt(event.pageX, event.pageY);
                 }
 
-                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener("mousemove", onMouseMove);
 
-                document.onmouseup = function() {
-                    document.removeEventListener('mousemove', onMouseMove);
+                document.onmouseup = function () {
+                    document.removeEventListener("mousemove", onMouseMove);
                     document.onmouseup = null;
                 };
             };
 
-            cardHeader.ondragstart = function() {
+            cardHeader.ondragstart = function () {
                 return false;
             };
 
             cardsContainer.appendChild(card);
         }
 
+        function createDraggableCard2(data, clickEvent) {
+            const cardsContainer = document.getElementById("cards-container");
+
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.style.left = clickEvent.pageX + "px";
+            card.style.top = clickEvent.pageY + "px";
+
+            const cardHeader = document.createElement("div");
+            cardHeader.classList.add("card-header");
+
+            const title = document.createElement("div");
+            title.textContent = `${data["Month"]} AAP Release Topic`;
+            title.style.fontWeight = "bold";
+
+            const closeButton = document.createElement("button");
+            closeButton.classList.add("close-button");
+            closeButton.innerHTML = "&times;";
+            closeButton.onclick = () => {
+                cardsContainer.removeChild(card);
+            };
+
+            cardHeader.appendChild(title);
+            cardHeader.appendChild(closeButton);
+            card.appendChild(cardHeader);
+
+            const cardBody = document.createElement("div");
+            cardBody.innerHTML = `
+                <p><strong>Topic:</strong> ${data["AAP Release Topic"] || "N/A"
+                }</p>
+                <p><strong>Team:</strong> ${data["Team"]}</p>
+                <p><strong>Area:</strong> ${data["Area"]}</p>
+            `;
+            card.appendChild(cardBody);
+
+            // Make the card draggable
+            cardHeader.onmousedown = function (event) {
+                event.preventDefault();
+                let shiftX = event.clientX - card.getBoundingClientRect().left;
+                let shiftY = event.clientY - card.getBoundingClientRect().top;
+
+                function moveAt(pageX, pageY) {
+                    card.style.left = pageX - shiftX + "px";
+                    card.style.top = pageY - shiftY + "px";
+                }
+
+                function onMouseMove(event) {
+                    moveAt(event.pageX, event.pageY);
+                }
+
+                document.addEventListener("mousemove", onMouseMove);
+
+                document.onmouseup = function () {
+                    document.removeEventListener("mousemove", onMouseMove);
+                    document.onmouseup = null;
+                };
+            };
+
+            cardHeader.ondragstart = function () {
+                return false;
+            };
+
+            cardsContainer.appendChild(card);
+        }
+
+        function createDraggableCardChart3(data, clickEvent) {
+            const cardsContainer = document.getElementById("cards-container");
+
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.style.left = clickEvent.pageX + "px";
+            card.style.top = clickEvent.pageY + "px";
+
+            const cardHeader = document.createElement("div");
+            cardHeader.classList.add("card-header");
+
+            const title = document.createElement("div");
+            title.style.fontWeight = "bold";
+            title.textContent = `Uni Release: ${data.month}`;
+
+            const closeButton = document.createElement("button");
+            closeButton.classList.add("close-button");
+            closeButton.innerHTML = "&times;";
+            closeButton.onclick = () => {
+                cardsContainer.removeChild(card);
+            };
+
+            cardHeader.appendChild(title);
+            cardHeader.appendChild(closeButton);
+            card.appendChild(cardHeader);
+
+            const cardBody = document.createElement("div");
+
+            var topicList = document.createElement("ul");
+            if (data.titles.length == 0) {
+                var li = document.createElement("li");
+                li.textContent = "no release this month";
+                topicList.appendChild(li);
+            } else {
+                data.titles.forEach(function (topic) {
+                    var li = document.createElement("li");
+                    li.textContent = topic;
+                    topicList.appendChild(li);
+                });
+            }
+            
+            cardBody.appendChild(topicList)
+            card.appendChild(cardBody);
+
+            // Make the card draggable
+            cardHeader.onmousedown = function (event) {
+                event.preventDefault();
+                let shiftX = event.clientX - card.getBoundingClientRect().left;
+                let shiftY = event.clientY - card.getBoundingClientRect().top;
+
+                function moveAt(pageX, pageY) {
+                    card.style.left = pageX - shiftX + "px";
+                    card.style.top = pageY - shiftY + "px";
+                }
+
+                function onMouseMove(event) {
+                    moveAt(event.pageX, event.pageY);
+                }
+
+                document.addEventListener("mousemove", onMouseMove);
+
+                document.onmouseup = function () {
+                    document.removeEventListener("mousemove", onMouseMove);
+                    document.onmouseup = null;
+                };
+            };
+
+            cardHeader.ondragstart = function () {
+                return false;
+            };
+
+            cardsContainer.appendChild(card);
+        }
 
         // Get the SVG element and dimensions
-        var svg = document.getElementById('chart');
+        var svg = document.getElementById("chart");
         var width = window.innerWidth;
         var height = window.innerHeight;
-        svg.setAttribute('width', width);
-        svg.setAttribute('height', height);
+        svg.setAttribute("width", width);
+        svg.setAttribute("height", height);
 
         var centerX = width / 2;
         var centerY = height / 2;
 
         var margin = 20;
         var ringGap = 10; // Increased gap for better spacing
-        var numRings = 4;
+        var numRings = 5;
         var centralCircleRadius = 80;
 
         var outerRadius = Math.min(width, height) / 2 - margin;
 
-        var totalAvailableRadius = outerRadius - centralCircleRadius - (numRings * ringGap);
+        var totalAvailableRadius =
+            outerRadius - centralCircleRadius - numRings * ringGap;
         var ringWidth = totalAvailableRadius / numRings;
 
         var chartTitles = [
-            'JIRA TIX',
-            'AAP Calendar',
-            'University Calendar',
-            'Student Journey'
-        ];
-
-        var chartColors = [
-            '#A8E6CF', // Pastel blue replaced with heatmap start color for chart_1
-            '#D7B3FF', // Pastel purple
-            '#FFA07A', // Light salmon (dark orange)
-            '#FFFFB3'  // Pastel yellow
+            "JIRA TIX",
+            "AAP Calendar",
+            "University Calendar",
+            "Student Journey",
         ];
 
         var rings = [];
 
         // Calculate inner and outer radii for each ring
         for (var i = 0; i < numRings; i++) {
-            var innerRadius = centralCircleRadius + ringGap * (i + 1) + ringWidth * i;
+            var innerRadius =
+                centralCircleRadius + ringGap * (i + 1) + ringWidth * i;
             var outerRadiusRing = innerRadius + ringWidth;
             rings.push({ innerRadius: innerRadius, outerRadius: outerRadiusRing });
         }
 
         // Create central circle with the current year
-        var centralCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        var centralCircle = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+        );
         centralCircle.setAttribute("cx", centerX);
         centralCircle.setAttribute("cy", centerY);
         centralCircle.setAttribute("r", centralCircleRadius);
@@ -537,7 +726,14 @@
         svg.appendChild(text);
 
         // Function to describe a donut slice path
-        function describeDonutSlice(cx, cy, innerRadius, outerRadius, startAngle, endAngle) {
+        function describeDonutSlice(
+            cx,
+            cy,
+            innerRadius,
+            outerRadius,
+            startAngle,
+            endAngle
+        ) {
             var x1 = cx + outerRadius * Math.cos(startAngle);
             var y1 = cy + outerRadius * Math.sin(startAngle);
             var x2 = cx + outerRadius * Math.cos(endAngle);
@@ -551,11 +747,29 @@
             var largeArcFlag = endAngle - startAngle <= Math.PI ? "0" : "1";
 
             var pathData = [
-                "M", x1, y1,
-                "A", outerRadius, outerRadius, 0, largeArcFlag, 1, x2, y2,
-                "L", x3, y3,
-                "A", innerRadius, innerRadius, 0, largeArcFlag, 0, x4, y4,
-                "Z"
+                "M",
+                x1,
+                y1,
+                "A",
+                outerRadius,
+                outerRadius,
+                0,
+                largeArcFlag,
+                1,
+                x2,
+                y2,
+                "L",
+                x3,
+                y3,
+                "A",
+                innerRadius,
+                innerRadius,
+                0,
+                largeArcFlag,
+                0,
+                x4,
+                y4,
+                "Z",
             ].join(" ");
 
             return pathData;
@@ -566,204 +780,331 @@
             var ring = rings[ringIndex];
             var innerRadius = ring.innerRadius;
             var outerRadiusRing = ring.outerRadius;
-            var color = chartColors[ringIndex];
             var chartTitle = chartTitles[ringIndex];
 
             var group = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
             // Add title to the group for hover effect
-            var title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+            var title = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "title"
+            );
             title.textContent = chartTitle;
             group.appendChild(title);
 
             if (ringIndex === 0) {
-              for (var month = 0; month < 12; month++) {
-                var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
-                var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
+                for (var month = 0; month < 12; month++) {
+                    var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
+                    var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
 
-                var pathData;
-                var data = chart1Data[month];
-                var fillColor = getHeatmapColor1(data.tickets);
-                pathData = describeDonutSlice(centerX, centerY, innerRadius, outerRadiusRing, startAngle, endAngle);
+                    var pathData;
+                    var data = chart1Data[month];
+                    var fillColor = getHeatmapColor1(data.tickets);
+                    pathData = describeDonutSlice(
+                        centerX,
+                        centerY,
+                        innerRadius,
+                        outerRadiusRing,
+                        startAngle,
+                        endAngle
+                    );
 
-                var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("d", pathData);
-                path.setAttribute("fill", fillColor);
-                path.setAttribute("stroke", "#FFFFFF");
-                path.setAttribute("stroke-width", "1");
-                path.style.cursor = (ringIndex === 0) ? "pointer" : "default";
+                    var path = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "path"
+                    );
+                    path.setAttribute("d", pathData);
+                    path.setAttribute("fill", fillColor);
+                    path.setAttribute("stroke", "#FFFFFF");
+                    path.setAttribute("stroke-width", "1");
+                    path.style.cursor = ringIndex === 0 ? "pointer" : "default";
 
-                // If chart_1, add interactivity
-                path.addEventListener('click', (function(data) {
-                    return function(event) {
-                        createPopup(data, fillColor);
-                    };
-                })(chart1Data[month]));
+                    // If chart_1, add interactivity
+                    path.addEventListener(
+                        "click",
+                        (function (data) {
+                            return function (event) {
+                                createDraggableCard1(data, event);
+                            };
+                        })(chart1Data[month])
+                    );
 
-                group.appendChild(path);
+                    group.appendChild(path);
 
-                // Add month name text for chart_1
-                if (ringIndex === 0) {
-                    var midAngle = (startAngle + endAngle) / 2;
-                    var textRadius = (innerRadius + outerRadiusRing) / 2;
-                    var textX = centerX + textRadius * Math.cos(midAngle);
-                    var textY = centerY + textRadius * Math.sin(midAngle) + 5; // Adjust for vertical alignment
+                    // Add month name text for chart_1
+                    if (ringIndex === 0) {
+                        var midAngle = (startAngle + endAngle) / 2;
+                        var textRadius = (innerRadius + outerRadiusRing) / 2;
+                        var textX = centerX + textRadius * Math.cos(midAngle);
+                        var textY = centerY + textRadius * Math.sin(midAngle) + 5; // Adjust for vertical alignment
 
-                    var monthText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    monthText.setAttribute("x", textX);
-                    monthText.setAttribute("y", textY);
-                    monthText.setAttribute("text-anchor", "middle");
-                    monthText.setAttribute("font-size", "12px");
-                    monthText.setAttribute("font-weight", "bold");
-                    monthText.setAttribute("fill", "#000000");
-                    monthText.textContent = `${chart1Data[month].month} JIRA`;
+                        var monthText = document.createElementNS(
+                            "http://www.w3.org/2000/svg",
+                            "text"
+                        );
+                        monthText.setAttribute("x", textX);
+                        monthText.setAttribute("y", textY);
+                        monthText.setAttribute("text-anchor", "middle");
+                        monthText.setAttribute("font-size", "12px");
+                        monthText.setAttribute("font-weight", "bold");
+                        monthText.setAttribute("fill", "#000000");
+                        monthText.textContent = `${chart1Data[month].month}`;
 
-                    // Prevent text from capturing the click event (allow path to handle it)
-                    monthText.style.pointerEvents = "none";
+                        // Prevent text from capturing the click event (allow path to handle it)
+                        monthText.style.pointerEvents = "none";
 
-                    group.appendChild(monthText);
+                        group.appendChild(monthText);
+                    }
                 }
-              }
             }
 
             if (ringIndex === 1) {
-              for (var month = 0; month < 12; month++) {
-                var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
-                var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
+                for (var month = 0; month < 12; month++) {
+                    var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
+                    var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
 
-                var pathData = describeDonutSlice(centerX, centerY, innerRadius, outerRadiusRing, startAngle, endAngle);
+                    var pathData = describeDonutSlice(
+                        centerX,
+                        centerY,
+                        innerRadius,
+                        outerRadiusRing,
+                        startAngle,
+                        endAngle
+                    );
 
-                var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("d", pathData);
+                    var path = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "path"
+                    );
+                    path.setAttribute("d", pathData);
 
-                if (ringIndex === 1) { // chart_2
-                    // Count tickets for the month
-                    var currentMonth = month + 1;
-                    var tickets = chart2Data.filter(item => item["Month Sequence"] === currentMonth && item["AAP Release Topic"]);
-                    var ticketCount = tickets.length;
-                    var sliceColor = getHeatMapColor2(ticketCount);
-                    path.setAttribute("fill", sliceColor);
-                } else {
-                    path.setAttribute("fill", color);
+                    if (ringIndex === 1) {
+                        // chart_2
+                        // Count tickets for the month
+                        var currentMonth = month + 1;
+                        var tickets = chart2Data.filter(
+                            (item) =>
+                                item["Month Sequence"] === currentMonth &&
+                                item["AAP Release Topic"]
+                        );
+                        var ticketCount = tickets.length;
+                        var sliceColor = getHeatMapColor2(ticketCount);
+                        path.setAttribute("fill", sliceColor);
+                    }
+
+                    path.setAttribute("stroke", "#FFFFFF");
+                    path.setAttribute("stroke-width", "1");
+
+                    group.appendChild(path);
+
+                    // If chart_2, add foreignObject with month name and dots
+                    if (ringIndex === 1) {
+                        // chart_2
+                        var foreignObject = document.createElementNS(
+                            "http://www.w3.org/2000/svg",
+                            "foreignObject"
+                        );
+                        foreignObject.setAttribute(
+                            "x",
+                            centerX +
+                            ((innerRadius + outerRadiusRing) / 2) *
+                            Math.cos(startAngle + (endAngle - startAngle) / 2) -
+                            50
+                        ); // Adjust x
+                        foreignObject.setAttribute(
+                            "y",
+                            centerY +
+                            ((innerRadius + outerRadiusRing) / 2) *
+                            Math.sin(startAngle + (endAngle - startAngle) / 2) -
+                            30
+                        ); // Adjust y
+                        foreignObject.setAttribute("width", 100);
+                        foreignObject.setAttribute("height", 60);
+                        foreignObject.classList.add("foreign-object");
+
+                        var div = document.createElement("div");
+                        div.classList.add("slice-content");
+
+                        // Month name
+                        var monthName = document.createElement("div");
+                        monthName.classList.add("month-name");
+                        var monthNames = [
+                            "Jan",
+                            "Feb",
+                            "Mar",
+                            "Apr",
+                            "May",
+                            "Jun",
+                            "Jul",
+                            "Aug",
+                            "Sep",
+                            "Oct",
+                            "Nov",
+                            "Dec",
+                        ];
+                        monthName.textContent = `${monthNames[month]}`;
+                        div.appendChild(monthName);
+
+                        // Dots container
+                        var dotsContainer = document.createElement("div");
+                        dotsContainer.classList.add("dots-container");
+
+                        // Get tickets for the current month
+                        var monthTickets = chart2Data.filter(
+                            (item) =>
+                                item["Month Sequence"] === month + 1 &&
+                                item["AAP Release Topic"]
+                        );
+
+                        monthTickets.forEach((ticket) => {
+                            var dot = document.createElement("div");
+                            dot.classList.add("dot");
+                            dot.title = ticket["AAP Release Topic"];
+                            // dot.style.backgroundColor = '#FFFF'; // Default dot color
+                            dot.onclick = function (event) {
+                                event.stopPropagation(); // Prevent triggering parent events
+                                createDraggableCard2(ticket, event);
+                            };
+                            dotsContainer.appendChild(dot);
+                        });
+
+                        div.appendChild(dotsContainer);
+                        foreignObject.appendChild(div);
+                        group.appendChild(foreignObject);
+                    }
                 }
-
-                path.setAttribute("stroke", "#FFFFFF");
-                path.setAttribute("stroke-width", "1");
-
-                group.appendChild(path);
-
-                // If chart_2, add foreignObject with month name and dots
-                if (ringIndex === 1) { // chart_2
-                    var foreignObject = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
-                    foreignObject.setAttribute("x", centerX + (innerRadius + outerRadiusRing) / 2 * Math.cos(startAngle + (endAngle - startAngle)/2) - 50); // Adjust x
-                    foreignObject.setAttribute("y", centerY + (innerRadius + outerRadiusRing) / 2 * Math.sin(startAngle + (endAngle - startAngle)/2) - 30); // Adjust y
-                    foreignObject.setAttribute("width", 100);
-                    foreignObject.setAttribute("height", 60);
-                    foreignObject.classList.add('foreign-object');
-
-                    var div = document.createElement('div');
-                    div.classList.add('slice-content');
-
-                    // Month name
-                    var monthName = document.createElement('div');
-                    monthName.classList.add('month-name');
-                    var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                    monthName.textContent = `${monthNames[month]} AAP`;
-                    div.appendChild(monthName);
-
-                    // Dots container
-                    var dotsContainer = document.createElement('div');
-                    dotsContainer.classList.add('dots-container');
-
-                    // Get tickets for the current month
-                    var monthTickets = chart2Data.filter(item => item["Month Sequence"] === (month + 1) && item["AAP Release Topic"]);
-
-                    monthTickets.forEach(ticket => {
-                        var dot = document.createElement('div');
-                        dot.classList.add('dot');
-                        dot.title = ticket["AAP Release Topic"];
-                        dot.style.backgroundColor = '#555'; // Default dot color
-                        dot.onclick = function(event) {
-                            event.stopPropagation(); // Prevent triggering parent events
-                            createDraggableCard(ticket, event);
-                        };
-                        dotsContainer.appendChild(dot);
-                    });
-
-                    div.appendChild(dotsContainer);
-                    foreignObject.appendChild(div);
-                    group.appendChild(foreignObject);
-                }
-              }
             }
 
+            if (ringIndex === 2) {
+                for (var month = 0; month < 12; month++) {
+                    var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
+                    var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
+
+                    var pathData;
+                    var data = chart1Data[month];
+                    var fillColor = getHeatMapColor2(chart3Data[month].titles.length);
+                    pathData = describeDonutSlice(
+                        centerX,
+                        centerY,
+                        innerRadius,
+                        outerRadiusRing,
+                        startAngle,
+                        endAngle
+                    );
+
+                    var path = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "path"
+                    );
+                    path.setAttribute("d", pathData);
+                    path.setAttribute("fill", fillColor);
+                    path.setAttribute("stroke", "#FFFFFF");
+                    path.setAttribute("stroke-width", "1");
+                    path.style.cursor = ringIndex === 0 ? "pointer" : "default";
+
+                    path.addEventListener(
+                        "click",
+                        (function (data) {
+                            return function (event) {
+                                event.stopPropagation(); // Prevent triggering parent events
+                                createDraggableCardChart3(data, event);
+                            };
+                        })(chart3Data[month])
+                    );
+
+                    group.appendChild(path);
+
+                    // If chart_2, add foreignObject with month name and dots
+                    if (ringIndex === 2) {
+                        var midAngle = (startAngle + endAngle) / 2;
+                        var textRadius = (innerRadius + outerRadiusRing) / 2;
+                        var textX = centerX + textRadius * Math.cos(midAngle);
+                        var textY = centerY + textRadius * Math.sin(midAngle) + 5; // Adjust for vertical alignment
+
+                        var monthText = document.createElementNS(
+                            "http://www.w3.org/2000/svg",
+                            "text"
+                        );
+                        monthText.setAttribute("x", textX);
+                        monthText.setAttribute("y", textY);
+                        monthText.setAttribute("text-anchor", "middle");
+                        monthText.setAttribute("font-size", "12px");
+                        monthText.setAttribute("font-weight", "bold");
+                        monthText.setAttribute("fill", "#000000");
+                        monthText.textContent = `${chart1Data[month].month}`;
+
+                        // Prevent text from capturing the click event (allow path to handle it)
+                        monthText.style.pointerEvents = "none";
+
+                        group.appendChild(monthText);
+                    }
+                }
+            }
+
+
+            if (ringIndex === 3) {
+                for (var month = 0; month < 12; month++) {
+                    var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
+                    var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
+
+                    var pathData;
+                    var data = chart1Data[month];
+                    pathData = describeDonutSlice(
+                        centerX,
+                        centerY,
+                        innerRadius,
+                        outerRadiusRing,
+                        startAngle,
+                        endAngle
+                    );
+
+                    var path = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "path"
+                    );
+                    path.setAttribute("d", pathData);
+                    path.setAttribute("fill", "#414141");
+                    path.setAttribute("stroke", "#FFFFFF");
+                    path.setAttribute("stroke-width", "1");
+                    path.style.cursor = ringIndex === 0 ? "pointer" : "default";
+
+                    group.appendChild(path);
+
+                    // If chart_2, add foreignObject with month name and dots
+                    if (ringIndex === 3) {
+                        var midAngle = (startAngle + endAngle) / 2;
+                        var textRadius = (innerRadius + outerRadiusRing) / 2;
+                        var textX = centerX + textRadius * Math.cos(midAngle);
+                        var textY = centerY + textRadius * Math.sin(midAngle) + 5; // Adjust for vertical alignment
+
+                        var monthText = document.createElementNS(
+                            "http://www.w3.org/2000/svg",
+                            "text"
+                        );
+                        monthText.setAttribute("x", textX);
+                        monthText.setAttribute("y", textY);
+                        monthText.setAttribute("text-anchor", "middle");
+                        monthText.setAttribute("font-size", "12px");
+                        monthText.setAttribute("font-weight", "bold");
+                        monthText.setAttribute("fill", "#FFFFFF");
+                        monthText.textContent = `${chart1Data[month].month}`;
+
+                        // Prevent text from capturing the click event (allow path to handle it)
+                        monthText.style.pointerEvents = "none";
+
+                        group.appendChild(monthText);
+                    }
+                }
+            }
             svg.appendChild(group);
         }
 
-        // Function to create popup card
-        function createPopup(data, bgColor) {
-            // Create card element
-            var card = document.createElement('div');
-            card.classList.add('popup-card');
-            // card.style.backgroundColor = bgColor;
-
-            // Set initial position
-            card.style.left = '100px';
-            card.style.top = '100px';
-
-            // Create header with title and close button
-            var header = document.createElement('div');
-            header.classList.add('popup-header');
-
-            var title = document.createElement('div');
-            // title.textContent = data.month;
-            title.textContent = `${data.month} JIRA Tickets`;
-            title.style.fontWeight = 'bold';
-
-            var closeBtn = document.createElement('div');
-            closeBtn.innerHTML = '&times;';
-            closeBtn.classList.add('close-btn');
-            closeBtn.addEventListener('click', function() {
-                document.body.removeChild(card);
-            });
-
-            header.appendChild(title);
-            header.appendChild(closeBtn);
-
-            // Create content
-            var content = document.createElement('div');
-            content.classList.add('popup-content');
-
-            var tickets = document.createElement('div');
-            tickets.innerHTML = `<strong>Total Tickets:</strong> ${data.tickets}`;
-            content.appendChild(tickets);
-
-            var topics = document.createElement('div');
-            topics.innerHTML = `<strong>Topics:</strong>`;
-            var topicList = document.createElement('ul');
-            data.topics.forEach(function(topic) {
-                var li = document.createElement('li');
-                li.textContent = topic;
-                topicList.appendChild(li);
-            });
-            topics.appendChild(topicList);
-            content.appendChild(topics);
-
-            card.appendChild(header);
-            card.appendChild(content);
-            document.body.appendChild(card);
-
-            // Make the card draggable
-            makeDraggable(card);
-        }
-
         // Handle window resize
-        window.addEventListener('resize', function() {
+        window.addEventListener("resize", function () {
             width = window.innerWidth;
             height = window.innerHeight;
-            svg.setAttribute('width', width);
-            svg.setAttribute('height', height);
+            svg.setAttribute("width", width);
+            svg.setAttribute("height", height);
             centerX = width / 2;
             centerY = height / 2;
 
@@ -772,4 +1113,5 @@
         });
     </script>
 </body>
+
 </html>
