@@ -713,16 +713,43 @@
         svg.appendChild(centralCircle);
 
         var year = new Date().getFullYear();
+        // var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        // text.setAttribute("x", centerX);
+        // text.setAttribute("y", centerY + 5); // Adjusted for vertical alignment
+        // text.setAttribute("text-anchor", "middle");
+        // text.setAttribute("font-size", centralCircleRadius / 2);
+        // text.setAttribute("font-family", "Arial, sans-serif");
+        // text.setAttribute("font-weight", "bold");
+        // text.setAttribute("fill", "#000000");
+        // text.setAttribute('style', 'white-space: pre;');
+        // text.textContent = `${year} UNiCAL`;
         var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
         text.setAttribute("x", centerX);
-        text.setAttribute("y", centerY + 5); // Adjusted for vertical alignment
+        text.setAttribute("y", centerY+20); // Initial position for the first line
         text.setAttribute("text-anchor", "middle");
-        text.setAttribute("font-size", centralCircleRadius / 2);
         text.setAttribute("font-family", "Arial, sans-serif");
         text.setAttribute("font-weight", "bold");
         text.setAttribute("fill", "#000000");
-        text.textContent = year;
+        text.setAttribute('style', 'white-space: pre;');
 
+        // Create the first tspan for the year
+        var tspanYear = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        tspanYear.setAttribute("x", centerX);
+        text.setAttribute("y", centerY);
+        tspanYear.setAttribute("dy", "0"); // First line
+        tspanYear.setAttribute("font-size", centralCircleRadius / 2);
+        tspanYear.textContent = `${year}`;
+
+        // Create the second tspan for "UNiCAL"
+        var tspanText = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+        tspanText.setAttribute("x", centerX);
+        text.setAttribute("y", centerY);
+        tspanText.setAttribute("dy", "1.2em"); // Move the second line below the first line
+        tspanText.setAttribute("font-size", centralCircleRadius / 3);
+        tspanText.textContent = "UNiCAL";
+
+        text.appendChild(tspanYear);
+        text.appendChild(tspanText);
         svg.appendChild(text);
 
         // Function to describe a donut slice path
