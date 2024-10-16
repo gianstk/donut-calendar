@@ -416,7 +416,7 @@
         ];
 
         const chart4Data = [
-            { month: "Jan", body: ["Sem 1 Payment", "Sem 1 Time Tabling (add/drop/discontinue)", "Sem 1 Enrolment"] },
+            { month: "Jan", body: ["Payment S1", "Time Tabling S1", "Enrolment S1"] },
             { month: "Feb", body: [] },
             { month: "Mar", body: [] },
             { month: "Apr", body: [] },
@@ -1202,7 +1202,7 @@
                     path.setAttribute("fill", fillColor);
                     path.setAttribute("stroke", "#FFFFFF");
                     path.setAttribute("stroke-width", "1");
-                    path.style.cursor = ringIndex === 0 ? "pointer" : "default";
+                    path.style.cursor = "pointer";
 
                     path.addEventListener(
                         "click",
@@ -1268,7 +1268,7 @@
                     path.setAttribute("fill", "#414141");
                     path.setAttribute("stroke", "#FFFFFF");
                     path.setAttribute("stroke-width", "1");
-                    path.style.cursor = ringIndex === 0 ? "pointer" : "default";
+                    path.style.cursor = "pointer";
 
                     group.appendChild(path);
 
