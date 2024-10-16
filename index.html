@@ -129,6 +129,21 @@
 
     <script>
         // Data for chart_1
+        const MONTH_MAP = {
+            1: "Jan",
+            2: "Feb",
+            3: "Mar",
+            4: "Apr",
+            5: "May",
+            6: "Jun",
+            7: "Jul",
+            8: "Aug",
+            9: "Sep",
+            10: "Oct",
+            11: "Nov",
+            12: "Dec"
+        }
+
         const chart1Data = [
             { month: "Jan", tickets: 71, topics: ["USS", "GOS"] },
             { month: "Feb", tickets: 67, topics: ["USS", "QS Rankings"] },
@@ -174,7 +189,7 @@
                 Area: "Planning & Analytics",
             },
             {
-                "AAP Release Topic": "Student Load Revenue Comliance",
+                "AAP Release Topic": "Student Load Revenue Compliance",
                 Month: "Jan",
                 "Month Sequence": 1,
                 Team: "Planning",
@@ -188,7 +203,7 @@
                 Area: "Planning & Analytics",
             },
             {
-                "AAP Release Topic": "Unifortum Scaling Factors",
+                "AAP Release Topic": "Uniforum Scaling Factors",
                 Month: "Jan",
                 "Month Sequence": 1,
                 Team: "Insights",
@@ -386,7 +401,7 @@
         ];
 
         const chart3Data = [
-            { month: "Jan", titles: ["UE agenda items"] },
+            { month: "Jan", titles: ["UE agenda items", "Timetabling S1", "Resource allocation S1", "Prep learning resources S1", "Room allocation S1", "Enrolment S1"] },
             { month: "Feb", titles: ["Semester 1 24", "UE monthly meeting", "UE agenda items"] },
             { month: "Mar", titles: ["UE monthly meeting"] },
             { month: "Apr", titles: ["UE agenda items", "UE monthly meeting", "Mid Semester break 1", "Census Date 1", "Open Day"] },
@@ -399,6 +414,21 @@
             { month: "Nov", titles: ["UE agenda items", "UE monthly meeting", "Exams Sem 2"] },
             { month: "Dec", titles: [] },
         ];
+
+        const chart4Data = [
+            { month: "Jan", body: ["Sem 1 Payment", "Sem 1 Time Tabling (add/drop/discontinue)", "Sem 1 Enrolment"] },
+            { month: "Feb", body: [] },
+            { month: "Mar", body: [] },
+            { month: "Apr", body: [] },
+            { month: "May", body: [] },
+            { month: "Jun", body: [] },
+            { month: "Jul", body: [] },
+            { month: "Aug", body: [] },
+            { month: "Sep", body: [] },
+            { month: "Oct", body: [] },
+            { month: "Nov", body: [] },
+            { month: "Dec", body: [] }
+        ]
 
 
         // Helper function to get heatmap color based on tickets
@@ -457,7 +487,7 @@
             cardHeader.classList.add("card-header");
 
             const title = document.createElement("div");
-            title.textContent = `${data.month} Tickets`;
+            title.textContent = `Jira Tickets: ${data.month}`;
             title.style.fontWeight = "bold";
 
             const closeButton = document.createElement("button");
@@ -533,7 +563,7 @@
             cardHeader.classList.add("card-header");
 
             const title = document.createElement("div");
-            title.textContent = `${data["Month"]} AAP Release Topic`;
+            title.textContent = `AAP Release Topic: ${data["Month"]}`;
             title.style.fontWeight = "bold";
 
             const closeButton = document.createElement("button");
@@ -586,6 +616,80 @@
             cardsContainer.appendChild(card);
         }
 
+        function createDraggableTopicSummary(data, clickEvent) {
+            const cardsContainer = document.getElementById("cards-container");
+
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.style.left = clickEvent.pageX + "px";
+            card.style.top = clickEvent.pageY + "px";
+
+            const cardHeader = document.createElement("div");
+            cardHeader.classList.add("card-header");
+
+            const title = document.createElement("div");
+            title.style.fontWeight = "bold";
+            title.textContent = `AAP Releases: ${MONTH_MAP[data.month]}`;
+
+            const closeButton = document.createElement("button");
+            closeButton.classList.add("close-button");
+            closeButton.innerHTML = "&times;";
+            closeButton.onclick = () => {
+                cardsContainer.removeChild(card);
+            };
+
+            cardHeader.appendChild(title);
+            cardHeader.appendChild(closeButton);
+            card.appendChild(cardHeader);
+
+            // card body
+            const cardBody = document.createElement("div");
+
+            var topicList = document.createElement("ul");
+            if (data.topics.length == 0) {
+                var li = document.createElement("li");
+                li.textContent = "no release this month";
+                topicList.appendChild(li);
+            } else {
+                data.topics.forEach(function (topic) {
+                    var li = document.createElement("li");
+                    li.textContent = topic["AAP Release Topic"];
+                    topicList.appendChild(li);
+                });
+            }
+            
+            // Make the card draggable
+            cardHeader.onmousedown = function (event) {
+                event.preventDefault();
+                let shiftX = event.clientX - card.getBoundingClientRect().left;
+                let shiftY = event.clientY - card.getBoundingClientRect().top;
+
+                function moveAt(pageX, pageY) {
+                    card.style.left = pageX - shiftX + "px";
+                    card.style.top = pageY - shiftY + "px";
+                }
+
+                function onMouseMove(event) {
+                    moveAt(event.pageX, event.pageY);
+                }
+
+                document.addEventListener("mousemove", onMouseMove);
+
+                document.onmouseup = function () {
+                    document.removeEventListener("mousemove", onMouseMove);
+                    document.onmouseup = null;
+                };
+            };
+
+            cardHeader.ondragstart = function () {
+                return false;
+            };
+
+            cardBody.appendChild(topicList)
+            card.appendChild(cardBody);
+            cardsContainer.appendChild(card);
+        }
+
         function createDraggableCardChart3(data, clickEvent) {
             const cardsContainer = document.getElementById("cards-container");
 
@@ -599,7 +703,7 @@
 
             const title = document.createElement("div");
             title.style.fontWeight = "bold";
-            title.textContent = `Uni Release: ${data.month}`;
+            title.textContent = `University Life Cycle: ${data.month}`;
 
             const closeButton = document.createElement("button");
             closeButton.classList.add("close-button");
@@ -621,6 +725,80 @@
                 topicList.appendChild(li);
             } else {
                 data.titles.forEach(function (topic) {
+                    var li = document.createElement("li");
+                    li.textContent = topic;
+                    topicList.appendChild(li);
+                });
+            }
+            
+            cardBody.appendChild(topicList)
+            card.appendChild(cardBody);
+
+            // Make the card draggable
+            cardHeader.onmousedown = function (event) {
+                event.preventDefault();
+                let shiftX = event.clientX - card.getBoundingClientRect().left;
+                let shiftY = event.clientY - card.getBoundingClientRect().top;
+
+                function moveAt(pageX, pageY) {
+                    card.style.left = pageX - shiftX + "px";
+                    card.style.top = pageY - shiftY + "px";
+                }
+
+                function onMouseMove(event) {
+                    moveAt(event.pageX, event.pageY);
+                }
+
+                document.addEventListener("mousemove", onMouseMove);
+
+                document.onmouseup = function () {
+                    document.removeEventListener("mousemove", onMouseMove);
+                    document.onmouseup = null;
+                };
+            };
+
+            cardHeader.ondragstart = function () {
+                return false;
+            };
+
+            cardsContainer.appendChild(card);
+        }
+
+        function createDraggableCardChart4(data, clickEvent) {
+            const cardsContainer = document.getElementById("cards-container");
+
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.style.left = clickEvent.pageX + "px";
+            card.style.top = clickEvent.pageY + "px";
+
+            const cardHeader = document.createElement("div");
+            cardHeader.classList.add("card-header");
+
+            const title = document.createElement("div");
+            title.style.fontWeight = "bold";
+            title.textContent = `Student Journey: ${data.month}`;
+
+            const closeButton = document.createElement("button");
+            closeButton.classList.add("close-button");
+            closeButton.innerHTML = "&times;";
+            closeButton.onclick = () => {
+                cardsContainer.removeChild(card);
+            };
+
+            cardHeader.appendChild(title);
+            cardHeader.appendChild(closeButton);
+            card.appendChild(cardHeader);
+
+            const cardBody = document.createElement("div");
+
+            var topicList = document.createElement("ul");
+            if (data.body.length == 0) {
+                var li = document.createElement("li");
+                li.textContent = "TBD";
+                topicList.appendChild(li);
+            } else {
+                data.body.forEach(function (topic) {
                     var li = document.createElement("li");
                     li.textContent = topic;
                     topicList.appendChild(li);
@@ -682,7 +860,7 @@
         var ringWidth = totalAvailableRadius / numRings;
 
         var chartTitles = [
-            "JIRA TIX",
+            "JIRA Tickets",
             "AAP Calendar",
             "University Calendar",
             "Student Journey",
@@ -869,18 +1047,6 @@
                             "http://www.w3.org/2000/svg",
                             "text"
                         );
-                        monthText.setAttribute("x", textX);
-                        monthText.setAttribute("y", textY);
-                        monthText.setAttribute("text-anchor", "middle");
-                        monthText.setAttribute("font-size", "12px");
-                        monthText.setAttribute("font-weight", "bold");
-                        monthText.setAttribute("fill", "#000000");
-                        monthText.textContent = `${chart1Data[month].month}`;
-
-                        // Prevent text from capturing the click event (allow path to handle it)
-                        monthText.style.pointerEvents = "none";
-
-                        group.appendChild(monthText);
                     }
                 }
             }
@@ -905,23 +1071,37 @@
                     );
                     path.setAttribute("d", pathData);
 
-                    if (ringIndex === 1) {
-                        // chart_2
-                        // Count tickets for the month
-                        var currentMonth = month + 1;
-                        var tickets = chart2Data.filter(
-                            (item) =>
-                                item["Month Sequence"] === currentMonth &&
-                                item["AAP Release Topic"]
-                        );
-                        var ticketCount = tickets.length;
-                        var sliceColor = getHeatMapColor2(ticketCount);
-                        path.setAttribute("fill", sliceColor);
-                    }
+                    var currentMonth = month + 1;
+                    var tickets = chart2Data.filter(
+                        (item) =>
+                            item["Month Sequence"] === currentMonth &&
+                            item["AAP Release Topic"]
+                    );
+                    var ticketCount = tickets.length;
+                    var sliceColor = getHeatMapColor2(ticketCount);
+                    path.setAttribute("fill", sliceColor);
 
                     path.setAttribute("stroke", "#FFFFFF");
                     path.setAttribute("stroke-width", "1");
+                    path.style.cursor = ringIndex === 0 ? "pointer" : "default";
 
+                    const monthSummaryData = chart2Data
+                        .filter((item) => item["Month Sequence"] == currentMonth)
+                    
+                    console.log(monthSummaryData)
+                    const summary = { topics: monthSummaryData, month: currentMonth };
+
+                    path.addEventListener(
+                        "click",
+                        (function (data) {
+                            return function (event) {
+                                event.stopPropagation(); // Prevent triggering parent events
+                                createDraggableTopicSummary(summary, event);  
+                            };
+                        })()
+                    );
+
+                    group.style.cursor = "pointer";
                     group.appendChild(path);
 
                     // If chart_2, add foreignObject with month name and dots
@@ -938,6 +1118,7 @@
                             Math.cos(startAngle + (endAngle - startAngle) / 2) -
                             50
                         ); // Adjust x
+                        foreignObject.setAttribute("style", "pointer-events: none");
                         foreignObject.setAttribute(
                             "y",
                             centerY +
@@ -948,33 +1129,17 @@
                         foreignObject.setAttribute("width", 100);
                         foreignObject.setAttribute("height", 60);
                         foreignObject.classList.add("foreign-object");
+                        foreignObject.style.cursor = "pointer";
 
                         var div = document.createElement("div");
-                        div.classList.add("slice-content");
-
-                        // Month name
-                        var monthName = document.createElement("div");
-                        monthName.classList.add("month-name");
-                        var monthNames = [
-                            "Jan",
-                            "Feb",
-                            "Mar",
-                            "Apr",
-                            "May",
-                            "Jun",
-                            "Jul",
-                            "Aug",
-                            "Sep",
-                            "Oct",
-                            "Nov",
-                            "Dec",
-                        ];
-                        monthName.textContent = `${monthNames[month]}`;
-                        div.appendChild(monthName);
+                        div.classList.add("slice-content"); 
+                        div.setAttribute("stroke", "#FFFFFF");
+                        div.style.cursor = "pointer";
 
                         // Dots container
                         var dotsContainer = document.createElement("div");
                         dotsContainer.classList.add("dots-container");
+                        dotsContainer.style.cursor = "pointer";
 
                         // Get tickets for the current month
                         var monthTickets = chart2Data.filter(
@@ -987,7 +1152,6 @@
                             var dot = document.createElement("div");
                             dot.classList.add("dot");
                             dot.title = ticket["AAP Release Topic"];
-                            // dot.style.backgroundColor = '#FFFF'; // Default dot color
                             dot.onclick = function (event) {
                                 event.stopPropagation(); // Prevent triggering parent events
                                 createDraggableCard2(ticket, event);
@@ -996,7 +1160,18 @@
                         });
 
                         div.appendChild(dotsContainer);
+                        div.style.cursor = "pointer";
                         foreignObject.appendChild(div);
+                        foreignObject.style.cursor = "pointer";
+                        foreignObject.addEventListener(
+                        "click",
+                        (function (data) {
+                            return function (event) {
+                                event.stopPropagation(); // Prevent triggering parent events
+                                createDraggableTopicSummary(summary, event);
+                            };
+                        })()
+                    );
                         group.appendChild(foreignObject);
                     }
                 }
@@ -1048,22 +1223,22 @@
                         var textX = centerX + textRadius * Math.cos(midAngle);
                         var textY = centerY + textRadius * Math.sin(midAngle) + 5; // Adjust for vertical alignment
 
-                        var monthText = document.createElementNS(
-                            "http://www.w3.org/2000/svg",
-                            "text"
-                        );
-                        monthText.setAttribute("x", textX);
-                        monthText.setAttribute("y", textY);
-                        monthText.setAttribute("text-anchor", "middle");
-                        monthText.setAttribute("font-size", "12px");
-                        monthText.setAttribute("font-weight", "bold");
-                        monthText.setAttribute("fill", "#000000");
-                        monthText.textContent = `${chart1Data[month].month}`;
+                        // var monthText = document.createElementNS(
+                        //     "http://www.w3.org/2000/svg",
+                        //     "text"
+                        // );
+                        // monthText.setAttribute("x", textX);
+                        // monthText.setAttribute("y", textY);
+                        // monthText.setAttribute("text-anchor", "middle");
+                        // monthText.setAttribute("font-size", "12px");
+                        // monthText.setAttribute("font-weight", "bold");
+                        // monthText.setAttribute("fill", "#000000");
+                        // monthText.textContent = `${chart1Data[month].month}`;
 
-                        // Prevent text from capturing the click event (allow path to handle it)
-                        monthText.style.pointerEvents = "none";
+                        // // Prevent text from capturing the click event (allow path to handle it)
+                        // monthText.style.pointerEvents = "none";
 
-                        group.appendChild(monthText);
+                        // group.appendChild(monthText);
                     }
                 }
             }
@@ -1096,6 +1271,16 @@
                     path.style.cursor = ringIndex === 0 ? "pointer" : "default";
 
                     group.appendChild(path);
+
+                    path.addEventListener(
+                        "click",
+                        (function (data) {
+                            return function (event) {
+                                event.stopPropagation(); // Prevent triggering parent events
+                                createDraggableCardChart4(data, event);
+                            };
+                        })(chart4Data[month])
+                    );
 
                     // If chart_2, add foreignObject with month name and dots
                     if (ringIndex === 3) {
