@@ -475,7 +475,6 @@
         }
 
         function createDraggableCard1(data, clickEvent) {
-            console.log(data);
             const cardsContainer = document.getElementById("cards-container");
 
             const card = document.createElement("div");
@@ -848,9 +847,9 @@
         var centerX = width / 2;
         var centerY = height / 2;
 
-        var margin = 20;
-        var ringGap = 10; // Increased gap for better spacing
-        var numRings = 5;
+        var margin = 0;
+        var ringGap = 0; // Increased gap for better spacing
+        var numRings = 8;
         var centralCircleRadius = 80;
 
         var outerRadius = Math.min(width, height) / 2 - margin;
@@ -931,6 +930,40 @@
         svg.appendChild(text);
 
         // Function to describe a donut slice path
+
+        function describeDonutSlice(
+            cx, cy, innerRadius, outerRadius, startAngle, endAngle
+        ) {
+            const x1 = cx + outerRadius * Math.cos(startAngle);
+            const y1 = cy + outerRadius * Math.sin(startAngle);
+            const x2 = cx + outerRadius * Math.cos(endAngle);
+            const y2 = cy + outerRadius * Math.sin(endAngle);
+
+            const x3 = cx + innerRadius * Math.cos(endAngle);
+            const y3 = cy + innerRadius * Math.sin(endAngle);
+            const x4 = cx + innerRadius * Math.cos(startAngle);
+            const y4 = cy + innerRadius * Math.sin(startAngle);
+
+            const largeArcFlag = endAngle - startAngle <= Math.PI ? "0" : "1";
+
+            const pathData = [
+                "M", x1, y1,
+                "A", outerRadius, outerRadius, 0, largeArcFlag, 1, x2, y2,
+                "L", x3, y3,
+                "A", innerRadius, innerRadius, 0, largeArcFlag, 0, x4, y4,
+                "Z"
+            ].join(" ");
+
+            return pathData;
+        }
+
+        function getStartEndAngles(month) {
+            const OFFSET = -Math.PI / 12;
+            const startAngle = ((month * Math.PI * 2) / 12) + OFFSET;
+            const endAngle = (((month + 1) * Math.PI * 2) / 12) + OFFSET;
+            return { startAngle, endAngle };
+        }
+
         function describeDonutSlice(
             cx,
             cy,
@@ -939,6 +972,13 @@
             startAngle,
             endAngle
         ) {
+            console.log({ cx,
+            cy,
+                innerRadius,
+                outerRadius,
+                startAngle,
+                endAngle
+            })
             var x1 = cx + outerRadius * Math.cos(startAngle);
             var y1 = cy + outerRadius * Math.sin(startAngle);
             var x2 = cx + outerRadius * Math.cos(endAngle);
@@ -997,6 +1037,68 @@
             title.textContent = chartTitle;
             group.appendChild(title);
 
+            if (ringIndex === 1 || ringIndex === 3 || ringIndex === 5 || ringIndex === 7) {
+                for (var month = 0; month < 1; month++) {
+                    var startAngle = -1.8326;
+                    var endAngle = -1.309;
+
+                    var pathData;
+                    var data = chart1Data[month];
+                    pathData = describeDonutSlice(
+                        centerX,
+                        centerY,
+                        innerRadius,
+                        outerRadiusRing,
+                        startAngle,
+                        endAngle
+                    );
+
+                    var path = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "path"
+                    );
+                    path.setAttribute("d", pathData);
+                    path.setAttribute("fill", "#DDDD");
+                    path.setAttribute("stroke", "#FFFFFF");
+                    path.setAttribute("stroke-width", "1");
+                    group.appendChild(path);
+
+                    
+                    if (month == 0) {
+                        var midAngle = (startAngle + endAngle) / 2;
+                        var textRadius = (innerRadius + outerRadiusRing) / 2;
+                        var textX = centerX + textRadius * Math.cos(midAngle);
+                        var textY = centerY + textRadius * Math.sin(midAngle) + 5; // Adjust for vertical alignment
+
+                        var monthText = document.createElementNS(
+                            "http://www.w3.org/2000/svg",
+                            "text"
+                        );
+                        monthText.setAttribute("x", textX);
+                        monthText.setAttribute("y", textY);
+                        monthText.setAttribute("text-anchor", "middle");
+                        monthText.setAttribute("font-size", "14px");
+                        monthText.setAttribute("font-weight", "bold");
+                        monthText.setAttribute("fill", "#000000");
+
+                        if (ringIndex === 1) {
+                            monthText.textContent = `AAP Requests`;
+                        } else if (ringIndex === 3) {
+                            monthText.textContent = `AAP Releases`;
+                        } else if (ringIndex === 5) {
+                            monthText.textContent = `University Life Cycle`;
+                        } else if (ringIndex === 7) {
+                            monthText.textContent = `Student Journey`;
+                        }
+
+                        // Prevent text from capturing the click event (allow path to handle it)
+                        monthText.style.pointerEvents = "none";
+                        // path.appendChild(monthText);
+                        group.appendChild(monthText);
+                    }
+                }
+            }
+
             if (ringIndex === 0) {
                 for (var month = 0; month < 12; month++) {
                     var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
@@ -1051,7 +1153,7 @@
                 }
             }
 
-            if (ringIndex === 1) {
+            if (ringIndex === 2) {
                 for (var month = 0; month < 12; month++) {
                     var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
                     var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
@@ -1088,7 +1190,6 @@
                     const monthSummaryData = chart2Data
                         .filter((item) => item["Month Sequence"] == currentMonth)
                     
-                    console.log(monthSummaryData)
                     const summary = { topics: monthSummaryData, month: currentMonth };
 
                     path.addEventListener(
@@ -1105,7 +1206,7 @@
                     group.appendChild(path);
 
                     // If chart_2, add foreignObject with month name and dots
-                    if (ringIndex === 1) {
+                    if (ringIndex === 2) {
                         // chart_2
                         var foreignObject = document.createElementNS(
                             "http://www.w3.org/2000/svg",
@@ -1177,7 +1278,7 @@
                 }
             }
 
-            if (ringIndex === 2) {
+            if (ringIndex === 4) {
                 for (var month = 0; month < 12; month++) {
                     var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
                     var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
@@ -1222,29 +1323,12 @@
                         var textRadius = (innerRadius + outerRadiusRing) / 2;
                         var textX = centerX + textRadius * Math.cos(midAngle);
                         var textY = centerY + textRadius * Math.sin(midAngle) + 5; // Adjust for vertical alignment
-
-                        // var monthText = document.createElementNS(
-                        //     "http://www.w3.org/2000/svg",
-                        //     "text"
-                        // );
-                        // monthText.setAttribute("x", textX);
-                        // monthText.setAttribute("y", textY);
-                        // monthText.setAttribute("text-anchor", "middle");
-                        // monthText.setAttribute("font-size", "12px");
-                        // monthText.setAttribute("font-weight", "bold");
-                        // monthText.setAttribute("fill", "#000000");
-                        // monthText.textContent = `${chart1Data[month].month}`;
-
-                        // // Prevent text from capturing the click event (allow path to handle it)
-                        // monthText.style.pointerEvents = "none";
-
-                        // group.appendChild(monthText);
                     }
                 }
             }
 
 
-            if (ringIndex === 3) {
+            if (ringIndex === 6) {
                 for (var month = 0; month < 12; month++) {
                     var startAngle = (month * Math.PI * 2) / 12 - Math.PI / 2; // Start from the top
                     var endAngle = ((month + 1) * Math.PI * 2) / 12 - Math.PI / 2;
@@ -1283,7 +1367,7 @@
                     );
 
                     // If chart_2, add foreignObject with month name and dots
-                    if (ringIndex === 3) {
+                    if (ringIndex === 6) {
                         var midAngle = (startAngle + endAngle) / 2;
                         var textRadius = (innerRadius + outerRadiusRing) / 2;
                         var textX = centerX + textRadius * Math.cos(midAngle);
